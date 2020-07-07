@@ -1,0 +1,137 @@
+type Person{
+	name: String!
+	role: Role
+	skills: [PersonSkills!] @relation
+	"""
+	influences what type of jobs you can get
+	"""
+	reputation: Int!
+	familar: [Familiar!] @relation
+	ingredients: [SpellIngredient!] @relation
+	spellBook: [SpellBook!] @relation
+	cauldron: Cauldron
+	markets: [Market!]
+	hovel: [Hovel!]
+}
+
+type Player{
+	name: String!
+	character: Person
+}
+
+enum Role{
+	witch
+	villager
+}
+
+type Coordinate{
+	x: Int!
+	y: Int!
+}
+
+type Hovel{
+	name: String!
+	location: Coordinate!
+    owner: Person!
+}
+
+type Familiar{
+	name: String!
+	skills: [FamiliarSkills!] @relation
+	value: Int
+    familiar: Familiar!
+    owner: Person!
+}
+
+type PersonSkills{
+	type: SkillType!
+	modifier: Int
+    person: Person!
+}
+
+type FamiliarSkills{
+	type: SkillType!
+	modifier: Int
+	familiar: Familiar!
+}
+
+
+enum SkillType{
+	foraging
+	spellCreation
+	reputation
+	power
+}
+
+type Spell{
+	name: String!
+	description: String
+	ingredients: [SpellIngredient!] @relation
+	spellBook: SpellBook!
+}
+
+type SpellIngredient{
+	ingredient: Ingredient!
+	amount: Int!
+    owner: Person!
+    spell: Spell!
+}
+
+type Ingredient{
+	name: String!
+	description: String
+	value: Int!
+	quality: Int!
+}
+
+type SpellBook{
+	name: String!
+	description: String
+	pages: Int!
+	spells: [Spell!]  @relation
+	value: Int!
+    owner: Person!
+}
+
+type Cauldron{
+	name: String!
+	description: String
+	maxIngredients: Int!
+	spellSpeedModifier: Int!
+	value: Int!
+}
+
+type Market{
+	name: String!
+	location: Coordinate!
+	jobs: [Job!] @relation
+	people: [Person!] @relation
+}
+
+type Job{
+	name: String!
+	description: String
+	type: JobType
+	from: Person
+	to: Person
+	market: Market!
+}
+
+enum JobType{
+	spell
+	cure
+	curse
+}
+
+type Query {
+  allJobs: [Job!]
+	allPeople: [Person!]
+	allMarkets: [Market!]
+	allCauldrons: [Cauldron!]
+	allSpellBooks: [SpellBook!]
+	allIngredients: [Ingredient!]
+	allSpells: [Spell!]
+	allFamiliars: [Familiar!]
+	allHovels:[Hovel!]
+	allPlayers: [Player!]
+}
