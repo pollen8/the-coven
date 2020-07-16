@@ -1,17 +1,21 @@
-import React from 'react';
+import React, { FC } from 'react';
+import { Interpreter } from 'xstate';
 
-import { useMachine } from '@xstate/react';
-
-import { gameMachine } from '../game.machine';
 import { People } from '../People';
 import { AddWitchForm } from './AddWitchForm';
 
-export const HomePage = () => {
-  const [state, send, intepreter] = useMachine(gameMachine, {
-    devTools: true,
-  });
-  // console.log('homepage state', state);
-  const service = intepreter.children.get('addWitchMachine');
+interface IProps {
+  state: any;
+  send: any;
+  interpreter: Interpreter<any>;
+}
+
+export const HomePage: FC<IProps> = ({
+  state,
+  send,
+  interpreter,
+}) => {
+  const service = interpreter.children.get('addWitchMachine');
   return (
     <>
       <h1>Witches</h1>
@@ -23,7 +27,7 @@ export const HomePage = () => {
             type="button"
             onClick={() => send('CREATE_WITCH')}>
             Create witch
-    </button>
+          </button>
         </>
       }
       <h1>Villagers</h1>
@@ -39,6 +43,8 @@ export const HomePage = () => {
         <AddWitchForm
           service={service} />
       }
+      <button onClick={() => send('START_GAME')}>Start...</button>
+      <button onClick={() => send('EDIT_GAME')}>Edit ...</button>
     </>
   )
 }

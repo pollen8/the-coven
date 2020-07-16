@@ -37,6 +37,15 @@ Actions
  * Create spell
  * 
 
+The game starts on a top down grid map.
+Your witch needs to explore to find ingredients
+She starts with
+* a spell book (with one spell in it)
+* a caludron to mix the spell
+
+The initial level will be to find some ingredients to make a spell and sell it at the market
+The market can be accessed at any time via the UI
+
 
 xstate
  Activities => on going in a state.
