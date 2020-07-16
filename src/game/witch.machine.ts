@@ -1,7 +1,4 @@
-import {
-  Machine,
-  MachineOptions,
-} from 'xstate';
+import { Machine } from 'xstate';
 
 import { assign } from '@xstate/immer';
 

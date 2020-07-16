@@ -19,7 +19,7 @@ import { People } from './People';
 
 function App() {
   const [current, send] = useMachine(gameMachine);
-  console.log('current', current);
+  // console.log('current', current);
   return (
     <ApolloProvider client={client}>
       <Router>

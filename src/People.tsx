@@ -1,13 +1,14 @@
 import { gql } from 'apollo-boost';
-import React from 'react';
+import React, { FC } from 'react';
 
 import { useQuery } from '@apollo/react-hooks';
 
-const EXCHANGE_RATES = gql`
-query allPeople {
-  allPeople(_size:10) {
+const PEOPLE_BY_ROLE = gql`
+query($role: Role!) {
+  peopleByRole(role: $role) {
     data {
-    	name  
+      _id
+      name
       role
     }
   }
@@ -15,22 +16,33 @@ query allPeople {
 `;
 
 interface IPerson {
+  _id: string;
   name: string,
   role: string;
 }
-export const People = () => {
-  const { loading, error, data } = useQuery<{ allPeople: { data: IPerson[] } }>(EXCHANGE_RATES);
+
+interface IProps {
+  role: 'witch' | 'villager';
+}
+
+export const People: FC<IProps> = ({ role }) => {
+  const { loading, error, data } = useQuery<{ peopleByRole: { data: IPerson[] } }>(
+    PEOPLE_BY_ROLE,
+    { variables: { role } },
+  );
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
-  console.log('data', data);
+
   if (!data) {
     return null;
   }
   return (
     <>
       {
-        data.allPeople.data.map((person) => <p>{person.name}: {person.role}</p>)
+        data.peopleByRole.data.map((person) => <p key={person._id}>
+          {person.name}: {person.role}
+        </p>)
       }
     </>
   )

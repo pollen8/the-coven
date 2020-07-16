@@ -33,19 +33,3 @@ export const gameMachine = Machine({
     // }
   }
 });
-
-
-
-// deleteCategory: {
-//   invoke: {
-//     src: 'deleteCategory',
-//     onDone: {
-//       target: '#idle',
-//       actions: 'clearSelected',
-//     },
-//     onError: {
-//       actions: (context, event) => context.delete.errors = event.data,
-//       target: 'open',
-//     },
-//   },
-// },

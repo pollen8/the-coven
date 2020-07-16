@@ -1,11 +1,10 @@
 import { gql } from 'apollo-boost';
 import React, { FC } from 'react';
 import {
-  Interpreter,
+  Actor,
   Machine,
 } from 'xstate';
 
-import { useMutation } from '@apollo/react-hooks';
 import { assign } from '@xstate/immer';
 import { useService } from '@xstate/react';
 
@@ -19,11 +18,29 @@ mutation CreateWitch($data:PersonInput!) {
 }
 `;
 
-export const addWitchMachine = Machine<any, any, any>({
+export interface IWitch {
+  name: string;
+  reputation: number;
+  role: 'witch';
+}
+
+type TAddWitchContext = {
+  error: string;
+  data: IWitch
+}
+
+type TAddWitchEvent = { type: 'UPDATE', name: string }
+  | { type: 'SAVE' };
+
+export const addWitchMachine = Machine<TAddWitchContext, TAddWitchEvent>({
   id: 'addWitchMachine',
   initial: 'active',
   context: {
-    name: '',
+    data: {
+      name: '',
+      reputation: 0,
+      role: 'witch',
+    },
     error: '',
   },
   states: {
@@ -50,7 +67,7 @@ export const addWitchMachine = Machine<any, any, any>({
       type: 'final',
       data: (ctx) => {
         return {
-          name: ctx.name,
+          name: ctx.data.name,
         }
       }
     }
@@ -58,32 +75,30 @@ export const addWitchMachine = Machine<any, any, any>({
 }, {
   actions: {
     clearError: assign((context) => context.error = ''),
-    setError: assign((context, event) => context.error = event.data),
-    setName: assign((context: any, event: any) => context.name = event.name),
+    setError: assign((context, event: any) => context.error = event.data),
+    setName: assign((context, event: any) => context.data.name = event.name),
   },
   services: {
-    saveWitch: async () => {
-      console.log('save witch');
+    saveWitch: async (state) => {
       const res = await client.mutate({
         mutation: ADD_WITCH,
+        variables: { data: state.data },
       })
-      console.log('res', res);
-      return Promise.reject('bad witch');
+      if (res.errors) {
+        return Promise.reject('bad witch');
+      }
+      return Promise.resolve();
     }
   }
 })
 
 interface IProps {
-  intepreter: Interpreter<any>;
+  service: Actor;
 }
 export const AddWitchForm: FC<IProps> = ({
-  intepreter,
+  service,
 }) => {
-  console.log('intepreter', intepreter);
-  // const service = intepreter.children.get('addWitchMachine');
-  // if (!)
-  const [state, send] = useService<any, any>(intepreter.children.get('addWitchMachine') as any);
-  console.log('state', state);
+  const [state, send] = useService<TAddWitchContext, TAddWitchEvent>(service as any);
   return (<form>
     {
       state.context.error !== '' &&
