@@ -1,6 +1,6 @@
-import { gql } from 'apollo-boost';
 import React, { FC } from 'react';
 
+import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/react-hooks';
 
 const PEOPLE_BY_ROLE = gql`

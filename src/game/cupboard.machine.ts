@@ -16,16 +16,14 @@ import {
 
 export const cupboardMachine = Machine({
   id: 'cupboard',
-  initial: 'closed',
+  initial: 'open',
   context: {
     items: 0,
     capacity: 5,
   },
   states: {
     closed: {
-      on: {
-        OPEN: 'open'
-      }
+      type: 'final',
     },
     open: {
       on: {

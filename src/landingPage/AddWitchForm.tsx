@@ -1,10 +1,10 @@
-import { gql } from 'apollo-boost';
 import React, { FC } from 'react';
 import {
   Actor,
   Machine,
 } from 'xstate';
 
+import { gql } from '@apollo/client';
 import { assign } from '@xstate/immer';
 import { useService } from '@xstate/react';
 
@@ -93,7 +93,7 @@ export const addWitchMachine = Machine<TAddWitchContext, TAddWitchEvent>({
 })
 
 interface IProps {
-  service: Actor;
+  service?: Actor;
 }
 export const AddWitchForm: FC<IProps> = ({
   service,

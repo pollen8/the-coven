@@ -2,15 +2,7 @@ import { Machine } from 'xstate';
 
 import { assign } from '@xstate/immer';
 
-import { cupboardMachine } from './cupboard.machine';
-
-const tileHasProp = (context: any, event: any) => {
-  const { grid, position } = context;
-  const tile = grid[position.y][position.x];
-  return tile.propImg;
-}
-
-export const gameMachine = Machine({
+export const editorMachine = Machine({
   id: 'gameMachine',
   initial: 'initial',
   states: {
@@ -28,31 +20,27 @@ export const gameMachine = Machine({
         MOVE_LEFT: {
           actions: 'moveLeft',
         },
-        CHECK_PICKUP_PROP: [{
-          target: 'openCupboard',
-          cond: tileHasProp,
-        },
-        {
-          target: 'initial',
+        UPDATE_TILE: {
+          actions: 'updateTile',
         }
-        ],
       }
     },
-    openCupboard: {
-      invoke: {
-        id: 'cupboardMachine',
-        src: cupboardMachine,
-        data: {
-          cupboard: (context: any) => context.cupboard,
-        },
-        onDone: 'initial',
-      }
-    },
-
-
   }
 }, {
   actions: {
+    updateTile: assign((context: any, event: any) => {
+      const row = [...context.grid[event.position.x]];
+      row[event.position.y] = {
+        ...row[event.position.y],
+        [event.item.type === 'PROP' ? 'propImg' : 'baseImg']: event.item.name,
+      };
+      context.grid = [
+        ...context.grid.slice(0, event.position.x),
+        row,
+        ...context.grid.slice(event.position.x + 1),
+      ];
+
+    }),
     moveDown: assign((context: any, event: any) => {
       context.position = {
         ...context.position,

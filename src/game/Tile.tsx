@@ -4,6 +4,8 @@ import React, {
 } from 'react';
 import { useDrop } from 'react-dnd';
 
+import { tileSize } from './GameUI';
+
 export interface ITile {
   baseImg: string;
   propImg?: string;
@@ -14,6 +16,7 @@ export interface ITile {
 
 export const Tile: FC<ITile & HTMLAttributes<any>> = ({
   baseImg,
+  propImg,
   children,
   style,
   position,
@@ -21,7 +24,7 @@ export const Tile: FC<ITile & HTMLAttributes<any>> = ({
 }) => {
 
   const [{ isOver }, drop] = useDrop({
-    accept: 'TILE',
+    accept: ['PROP', 'TILE'],
     drop: (item) => {
       onDrop && position && onDrop({ position, item });
     },
@@ -37,5 +40,10 @@ export const Tile: FC<ITile & HTMLAttributes<any>> = ({
       border: `1px solid ${isOver ? 'red' : 'white'}`,
       background: `url(${baseImg}) repeat scroll 0% 0% / cover`,
       fontSize: "0.6rem"
-    }}>{children}</div>
+    }}>
+    {
+      propImg &&
+      <img src={propImg} alt="here" style={{ width: `${tileSize}px`, height: `${tileSize}` }} />
+    }
+    {children}</div>
 }

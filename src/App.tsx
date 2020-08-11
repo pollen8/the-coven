@@ -11,12 +11,24 @@ import { useMachine } from '@xstate/react';
 import { appMachine } from './app.machine';
 import { client } from './client';
 import { Editor } from './editor/Editor';
+import {
+  areaCols,
+  areaRows,
+  grid,
+  position,
+} from './game/buildMap';
 import { GameUI } from './game/GameUI';
 import { HomePage } from './landingPage/HomePage';
 
 function App() {
   const [current, send, interpreter] = useMachine(appMachine, {
     devTools: true,
+    context: {
+      grid,
+      areaCols,
+      areaRows,
+      position,
+    }
   });
   console.log('current', current);
   return (
@@ -25,16 +37,18 @@ function App() {
         <DndProvider backend={HTML5Backend}>
           <div className="App">
             {
-              current.matches('landing') && <HomePage
+              (current.matches('landing') || current.matches('addWitch')) && <HomePage
                 state={current}
                 send={send}
                 interpreter={interpreter} />
             }
             {
-              current.matches('playing') && <GameUI />
+              current.matches('playing') && <GameUI
+                interpreter={interpreter} />
             }
             {
-              current.matches('editing') && <Editor />
+              current.matches('editing') && <Editor
+                interpreter={interpreter} />
             }
           </div>
         </DndProvider>

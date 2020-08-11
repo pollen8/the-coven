@@ -1,54 +1,50 @@
-import React, { useState } from 'react';
+import React, {
+  FC,
+  useState,
+} from 'react';
+
+import { useService } from '@xstate/react';
 
 import { Map } from '../game/Map';
-import { ITile } from '../game/Tile';
 import { usePosition } from '../game/usePosition';
+import { PropList } from './PropList';
 import { TileList } from './TileList';
 
-const areaCols = 100;
-const areaRows = 100;
+interface IProps {
+  interpreter: any;
+}
 
+export const Editor: FC<IProps> = ({
+  interpreter,
+}) => {
+  const service = interpreter.children.get('editorMachine');
+  const [state, send] = useService<any, any>(service as any);
 
-const row: ITile[] = new Array(areaCols).fill('').map((v, i) => ({ row: 0, column: i, baseImg: `/tiles/generic-rpg-tile01.png` }))
-const defaultArea: ITile[][] = new Array(areaRows).fill(row)
-defaultArea.map((r: ITile[]) => r.map((v, i) => ({ ...v, row: i })));
-const saved = JSON.parse(localStorage.getItem('map-test') ?? '{}');
+  const { position, grid } = state.context;
+  usePosition(send);
 
-export const Editor = () => {
-  const position = usePosition({ x: 30, y: 20, direction: 'right' }, areaCols, areaRows);
-
-  const [area, updateArea] = useState(saved === {} ? defaultArea : saved);
   const [name, setName] = useState('');
   return (
     <>
       <input type="text" onChange={(e) => setName(e.target.value)} />
       <button
         onClick={() => {
-          localStorage.setItem('map-' + name, JSON.stringify(area));
+          localStorage.setItem('map-' + name, JSON.stringify(grid));
         }}
       >
         Save
     </button>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
         <Map
-          area={area}
+          area={grid}
           updateArea={(props: any) => {
-            console.log('upate in editor', props, area);
-            const row = [...area[props.position.x]];
-            row[props.position.y] = {
-              ...row[props.position.y],
-              baseImg: props.item.name,
-            };
-            updateArea([
-              ...area.slice(0, props.position.x),
-              row,
-              ...area.slice(props.position.x + 1),
-            ])
+            send({ type: 'UPDATE_TILE', ...props })
           }}
           center={position}>
         </Map>
         <div>
           <TileList />
+          <PropList />
         </div>
       </div>
     </>

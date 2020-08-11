@@ -43,8 +43,8 @@ export const HomePage: FC<IProps> = ({
         <AddWitchForm
           service={service} />
       }
-      <button onClick={() => send('START_GAME')}>Start...</button>
-      <button onClick={() => send('EDIT_GAME')}>Edit ...</button>
+      <button onClick={() => send({ type: 'START_GAME' })}>Start...</button>
+      <button onClick={() => send({ type: 'EDIT_GAME' })}>Edit ...</button>
     </>
   )
 }
