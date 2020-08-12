@@ -6,16 +6,11 @@ import { Cauldron } from './Cauldron';
 import Character from './Character';
 import { Cupboard } from './Cupboard';
 import { Map } from './Map';
+import { ToggleAudio } from './ToogleAudio';
 import { usePosition } from './usePosition';
 
-// const areaCols = 100;
-// const areaRows = 100;
 export const tileSize = 16;
 
-// const row: ITile[] = new Array(areaCols).fill('').map((v, i) => ({ row: 0, column: i, baseImg: `/tiles/generic-rpg-tile01.png` }))
-// const defaultArea: ITile[][] = new Array(areaRows).fill(row)
-// defaultArea.map((r: ITile[]) => r.map((v, i) => ({ ...v, row: i })));
-// const area = JSON.parse(localStorage.getItem('map-test') ?? '{}');
 
 interface IProps {
   interpreter: any;
@@ -43,7 +38,7 @@ export const GameUI: FC<IProps> = ({
             top: tileSize * (21 / 2) - tileSize / 2,
           }} />
       </Map>
-
+      <ToggleAudio />
       {
         state.matches('openCupboard') &&
 

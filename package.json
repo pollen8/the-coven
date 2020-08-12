@@ -16,6 +16,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.2",
     "styled-components": "^5.1.1",
+    "use-sound": "^1.0.2",
     "xstate-react-router": "^0.4.3",
     "xstate-router": "^0.4.3"
   },
