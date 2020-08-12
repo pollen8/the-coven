@@ -22,16 +22,45 @@ export const editorMachine = Machine({
         },
         UPDATE_TILE: {
           actions: 'updateTile',
+        },
+        ADD_PROP: {
+          actions: 'setActiveTile',
+          target: 'addProp',
+        },
+        SHOW_TITLE_DETAILS: {
+          actions: 'showTitleDetails',
         }
       }
     },
+    addProp: {
+      on: {
+        CANCEL: {
+          target: 'initial',
+        },
+        UPDATE: {
+          actions: 'updateProp',
+        },
+        UPDATE_TILE: {
+          actions: 'updateTile',
+        },
+      },
+    }
   }
 }, {
   actions: {
+    showTitleDetails: assign((context: any, event: any) => context.details = event),
+    setActiveTile: assign((context: any, event: any) => {
+      context.dropPosition = event.position;
+      context.prop.name = event.item.name;
+    }),
+    updateProp: assign((context: any, event: any) => {
+      context.prop[event.key] = event.value;
+    }),
     updateTile: assign((context: any, event: any) => {
       const row = [...context.grid[event.position.x]];
       row[event.position.y] = {
         ...row[event.position.y],
+        ...event.item,
         [event.item.type === 'PROP' ? 'propImg' : 'baseImg']: event.item.name,
       };
       context.grid = [

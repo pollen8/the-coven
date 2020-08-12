@@ -24,6 +24,7 @@ interface IMap {
   updateArea?: (props: any) => void;
   viewPortRows?: number;
   viewPortCols?: number;
+  send?: (action: any) => void;
 }
 
 export const Map: FC<IMap> = ({
@@ -31,6 +32,7 @@ export const Map: FC<IMap> = ({
   center,
   children,
   updateArea,
+  send,
   viewPortRows = 21,
   viewPortCols = 21,
 }) => {
@@ -51,11 +53,10 @@ export const Map: FC<IMap> = ({
             const col = i % viewPortCols;
             const row = Math.floor(i / viewPortRows);
             const tile = area[Math.max(0, row + areaBounds.top)][col + areaBounds.left];
-
             return <Tile key={i}
               {...tile}
+              send={send}
               onDrop={({ position, item }: any) => {
-                console.log('here', position, item);
                 updateArea && updateArea({ position, item });
               }}
               position={{ x: row + areaBounds.top, y: col + areaBounds.left }}

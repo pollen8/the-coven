@@ -9,9 +9,13 @@ import { tileSize } from './GameUI';
 export interface ITile {
   baseImg: string;
   propImg?: string;
+  title?: string;
+  description?: string;
+  value?: string | number;
   ref?: any;
   position?: { x: number, y: number };
   onDrop?: (params: { position: { x: number, y: number }, item: any }) => void;
+  send?: (action: any) => void;
 }
 
 export const Tile: FC<ITile & HTMLAttributes<any>> = ({
@@ -21,6 +25,10 @@ export const Tile: FC<ITile & HTMLAttributes<any>> = ({
   style,
   position,
   onDrop,
+  description,
+  title,
+  value,
+  send,
 }) => {
 
   const [{ isOver }, drop] = useDrop({
@@ -35,6 +43,7 @@ export const Tile: FC<ITile & HTMLAttributes<any>> = ({
   })
 
   return <div ref={drop}
+    onMouseEnter={() => send && send({ type: 'SHOW_TITLE_DETAILS', description, title, value })}
     style={{
       ...style,
       border: `1px solid ${isOver ? 'red' : 'white'}`,

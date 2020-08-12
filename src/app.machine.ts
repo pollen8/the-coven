@@ -58,6 +58,12 @@ export const appMachine = Machine({
           position: (context: any) => context.position,
           areaRows: (context: any) => context.areaRows,
           areaCols: (context: any) => context.areaCols,
+          prop: (context: any) => ({
+            title: '',
+            name: '',
+            description: '',
+            value: 0,
+          }),
         }
       }
     }

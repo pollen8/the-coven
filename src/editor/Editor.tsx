@@ -7,6 +7,7 @@ import { useService } from '@xstate/react';
 
 import { Map } from '../game/Map';
 import { usePosition } from '../game/usePosition';
+import { PropForm } from './PropForm';
 import { PropList } from './PropList';
 import { TileList } from './TileList';
 
@@ -34,15 +35,28 @@ export const Editor: FC<IProps> = ({
       >
         Save
     </button>
+      {
+        state.matches('addProp') &&
+        <PropForm
+          send={send}
+          state={state} />
+      }
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
         <Map
           area={grid}
+          send={send}
           updateArea={(props: any) => {
-            send({ type: 'UPDATE_TILE', ...props })
+            if (props.item.type === 'PROP') {
+              send({ type: 'ADD_PROP', ...props })
+            } else {
+              send({ type: 'UPDATE_TILE', ...props })
+            }
           }}
           center={position}>
         </Map>
+
         <div>
+          title: {state.context.details && state.context.details.title}
           <TileList />
           <PropList />
         </div>
