@@ -1,38 +1,63 @@
 import {
-  assign,
   Machine,
+  sendParent,
 } from 'xstate';
 
-// Available variables:
-// - Machine
-// - interpret
-// - assign
-// - send
-// - sendParent
-// - spawn
-// - raise
-// - actions
-// - XState (all XState exports)
+import { assign } from '@xstate/immer';
 
-export const cupboardMachine = Machine({
+import { IItem } from './Tile';
+
+export interface ICupboard {
+  items: IItem[];
+  capacity: number;
+}
+
+export interface CupboardContext {
+  cupboard: ICupboard;
+  item: IItem | null;
+}
+
+interface CupboardSchema {
+  states: {
+    closed: {};
+    open: {};
+    warnFull: {};
+  };
+}
+
+export type CupboardEvent = { type: 'ADD_ITEM', item: IItem }
+  | { type: 'REMOVE_ITEM', item: IItem }
+  | { type: 'CLOSE' }
+
+export const cupboardMachine = Machine<CupboardContext, CupboardSchema, CupboardEvent>({
   id: 'cupboard',
   initial: 'open',
   context: {
-    items: 0,
-    capacity: 5,
+    cupboard: {
+      items: [],
+      capacity: 5,
+    },
+    item: null,
   },
   states: {
     closed: {
       type: 'final',
+      data: {
+        cupboard: (context: CupboardContext) => context.cupboard,
+      }
     },
     open: {
       on: {
         CLOSE: 'closed',
-        ADD_ITEM: {
+        ADD_ITEM: [{
           target: '.',
-          actions: 'addItem',
+          actions: ['addItem', 'clearItem', sendParent('REMOVE_ITEM_FROM_MAP')],
           cond: 'notFull'
         },
+        {
+          target: 'warnFull',
+          cond: 'isFull',
+        }],
         REMOVE_ITEM: {
           target: '.',
           actions: 'removeItem',
@@ -40,19 +65,26 @@ export const cupboardMachine = Machine({
         }
       }
     },
+    warnFull: {
+      on: {
+        CLOSE: 'open',
+      }
+    }
 
   }
 }, {
   actions: {
-    addItem: assign({
-      items: (context) => context.items + 1
+    clearItem: assign((context: any) => context.item = null),
+    addItem: assign((context: any, event: any) => {
+      context.cupboard.items.push(event.item);
     }),
-    removeItem: assign({
-      items: (context) => context.items - 1
-    })
+    removeItem: assign((context: any, event: any) => {
+      context.cupboard.items = context.cupboard.items.filter((i: any) => i.title !== event.item.title)
+    }),
   },
   guards: {
-    notFull: (context) => context.items < context.capacity,
-    notEmpty: (context) => context.items > 0
+    isFull: (context) => context.cupboard.items.length >= context.cupboard.capacity,
+    notFull: (context) => context.cupboard.items.length < context.cupboard.capacity,
+    notEmpty: (context) => context.cupboard.items.length > 0
   }
 });

@@ -15,8 +15,8 @@ import {
 interface IProps {
   send: (action: any) => void;
   position: IPosition;
+  size: number;
 }
-
 
 function useInterval(callback: any, delay: number) {
   const savedCallback = useRef<any>();
@@ -38,15 +38,15 @@ function useInterval(callback: any, delay: number) {
   }, [delay]);
 }
 
-const Sprite = styled.div<{ direction: Direction, step: number }>`
-  width: 16px;
-  height:  16px;
+const Sprite = styled.div<{ direction: Direction, step: number, size: number }>`
+  width: ${(props) => props.size}px;
+  height:  ${(props) => props.size}px;
   position: absolute;
   top: 0;
   left: 0;
   background-image: url('/chars/gabe/gabe-idle-run.png');
-  background-size: auto 16px;
-  background-position: ${(props) => -props.step * 16}px, 0;
+  background-size: auto ${(props) => props.size}px;
+  background-position: ${(props) => -props.step * props.size}px, 0;
   background-repeat: no-repeat;
   transform: ${(props) => props.direction === 'left' ? 'scaleX(-1)' : 'scaleX(1)'};
 `;
@@ -55,6 +55,7 @@ const Character: FC<IProps & HTMLAttributes<any>> = ({
   send,
   position,
   style,
+  size,
 }) => {
 
   const [moving, setMoving] = useState(false);
@@ -64,9 +65,14 @@ const Character: FC<IProps & HTMLAttributes<any>> = ({
     setStep(moving ? step + 1 : 0);
   }, 100);
   useEffect(() => {
-    const watchKeyDown = () => setMoving(true);
+    const watchKeyDown = (e: KeyboardEvent) => e.key.includes('Arrow') && setMoving(true);
     const watchKeyUp = (e: KeyboardEvent) => {
-      setMoving(false);
+      switch (e.key) {
+        case 'i':
+          send({ action: '' })
+          break;
+      }
+      setMoving(false)
     };
 
     document.addEventListener('keydown', watchKeyDown);
@@ -81,6 +87,7 @@ const Character: FC<IProps & HTMLAttributes<any>> = ({
   return (
     <div style={{ ...style, position: 'absolute' }}>
       <Sprite
+        size={size}
         direction={position.direction}
         step={step % 6}
       />

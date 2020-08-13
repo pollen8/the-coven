@@ -14,7 +14,7 @@ export const appMachine = Machine({
     areaCols: 0,
     areaRows: 0,
     cupboard: {
-      capacity: 20,
+      capacity: 5,
       items: [],
     },
   },

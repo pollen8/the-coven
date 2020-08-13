@@ -4,12 +4,12 @@ import { useService } from '@xstate/react';
 
 import { Cauldron } from './Cauldron';
 import Character from './Character';
-import { Cupboard } from './Cupboard';
+import { Cupboard } from './cupboard/Cupboard';
 import { Map } from './Map';
 import { ToggleAudio } from './ToogleAudio';
 import { usePosition } from './usePosition';
 
-export const tileSize = 16;
+export const tileSize = 32;
 
 
 interface IProps {
@@ -32,6 +32,7 @@ export const GameUI: FC<IProps> = ({
         viewPortCols={21}
         center={position}>
         <Character position={position}
+          size={tileSize}
           send={send}
           style={{
             left: tileSize * (21 / 2) - tileSize / 2,
@@ -40,7 +41,7 @@ export const GameUI: FC<IProps> = ({
       </Map>
       <ToggleAudio />
       {
-        state.matches('openCupboard') &&
+        state.children.hasOwnProperty('cupboardMachine') &&
 
         <Cupboard interpreter={gameInterpreter} />
       }

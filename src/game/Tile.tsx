@@ -6,13 +6,17 @@ import { useDrop } from 'react-dnd';
 
 import { tileSize } from './GameUI';
 
-export interface ITile {
-  baseImg: string;
+export interface IItem {
   propImg?: string;
   title?: string;
   description?: string;
   value?: string | number;
+}
+
+export interface ITile extends IItem {
+  baseImg: string;
   ref?: any;
+  name?: string;
   position?: { x: number, y: number };
   onDrop?: (params: { position: { x: number, y: number }, item: any }) => void;
   send?: (action: any) => void;

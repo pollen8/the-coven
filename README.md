@@ -52,15 +52,8 @@ xstate
 
 null events / transient transitions for validating forms?
 
-////// TODO
 
-store map in game machine
-store character position in game machine
-space - game machine check pick up logic path
- - if no prop exit
-- if prop open modal to show prop
-- - Yes to add to ingredients (if space) - then update map props.
--- No to close and leave
 
-update cache when saving a witch
+Resouseces: 
 
+Credit "Kenney.nl" or "www.kenney.nl", this is not mandatory.

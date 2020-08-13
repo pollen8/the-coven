@@ -2,7 +2,11 @@ import { Machine } from 'xstate';
 
 import { assign } from '@xstate/immer';
 
-import { cupboardMachine } from './cupboard.machine';
+import {
+  cupboardMachine,
+  ICupboard,
+} from './cupboard.machine';
+import { ITile } from './Tile';
 
 const tileHasProp = (context: any, event: any) => {
   const { grid, position } = context;
@@ -10,9 +14,51 @@ const tileHasProp = (context: any, event: any) => {
   return tile.propImg;
 }
 
-export const gameMachine = Machine({
+interface IPosition {
+  x: number;
+  y: number;
+}
+
+type GameActions = { type: 'MOVE_DOWN' }
+  | { type: 'MOVE_UP' }
+  | { type: 'MOVE_RIGHT' }
+  | { type: 'MOVE_LEFT' }
+  | { type: 'CHECK_PICKUP_PROP' }
+  | { type: 'REMOVE_ITEM_FROM_MAP' };
+
+interface GameContext {
+  grid: ITile[][];
+  position: IPosition;
+  cupboard: ICupboard;
+  areaRows: number;
+  areaCols: number;
+}
+
+interface GameSchema {
+  states: {
+    initial: {};
+    openCupboard: {};
+  };
+};
+
+export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   id: 'gameMachine',
   initial: 'initial',
+  context: {
+    cupboard: {
+      items: [],
+      capacity: 5,
+    },
+    areaCols: 0,
+    areaRows: 0,
+    grid: [],
+    position: { x: 0, y: 0 },
+  },
+  on: {
+    REMOVE_ITEM_FROM_MAP: {
+      actions: 'removeItemFromMap',
+    },
+  },
   states: {
     initial: {
       on: {
@@ -36,7 +82,9 @@ export const gameMachine = Machine({
           target: 'initial',
         }
         ],
-      }
+
+      },
+
     },
     openCupboard: {
       invoke: {
@@ -44,8 +92,15 @@ export const gameMachine = Machine({
         src: cupboardMachine,
         data: {
           cupboard: (context: any) => context.cupboard,
+          item: (context: any, event: any) => {
+            const { grid, position } = context;
+            return grid[position.y][position.x];
+          },
         },
-        onDone: 'initial',
+        onDone: {
+          target: 'initial',
+          actions: 'saveCupboard',
+        },
       }
     },
 
@@ -53,6 +108,16 @@ export const gameMachine = Machine({
   }
 }, {
   actions: {
+    saveCupboard: assign((context: GameContext, event: any) => {
+      context.cupboard = event.data.cupboard;
+    }),
+    removeItemFromMap: assign((context: GameContext) => {
+      const { grid, position } = context;
+      const { title, name, description, value, propImg, ...rest } = grid[position.y][position.x];
+      grid[position.y][position.x] = {
+        ...rest
+      }
+    }),
     moveDown: assign((context: any, event: any) => {
       context.position = {
         ...context.position,
