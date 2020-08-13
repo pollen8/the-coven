@@ -1,4 +1,7 @@
-import React, { FC } from 'react';
+import React, {
+  FC,
+  useEffect,
+} from 'react';
 
 import { useService } from '@xstate/react';
 
@@ -11,18 +14,20 @@ import { usePosition } from './usePosition';
 
 export const tileSize = 32;
 
-
 interface IProps {
-  interpreter: any;
+  current: any;
 }
 export const GameUI: FC<IProps> = ({
-  interpreter,
+  current,
 }) => {
-
-  const service = interpreter.children.get('gameMachine');
+  const service = current.children.gameMachine;
   const [state, send, gameInterpreter] = useService<any, any>(service as any);
-  console.log('game state', state);
   const { position, grid } = state.context;
+
+  useEffect(() => {
+    localStorage.setItem('the-coven', JSON.stringify(state.context));
+  }, [state.context])
+
   usePosition(send);
   return (
     <div>

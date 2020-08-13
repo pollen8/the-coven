@@ -21,16 +21,19 @@ import { GameUI } from './game/GameUI';
 import { HomePage } from './landingPage/HomePage';
 
 function App() {
+  let context: any = localStorage.getItem('the-coven');
+  context = context ? JSON.parse(context) : {
+    grid,
+    areaCols,
+    areaRows,
+    position,
+  };
+
   const [current, send, interpreter] = useMachine(appMachine, {
     devTools: true,
-    context: {
-      grid,
-      areaCols,
-      areaRows,
-      position,
-    }
+    context,
   });
-  console.log('current', current);
+
   return (
     <ApolloProvider client={client}>
       <Router>
@@ -44,7 +47,7 @@ function App() {
             }
             {
               current.matches('playing') && <GameUI
-                interpreter={interpreter} />
+                current={current} />
             }
             {
               current.matches('editing') && <Editor
