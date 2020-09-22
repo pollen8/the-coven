@@ -7,13 +7,14 @@ import React, {
 } from 'react';
 import styled from 'styled-components';
 
+import { GameActions } from './game.machine';
 import {
   Direction,
   IPosition,
 } from './usePosition';
 
 interface IProps {
-  send: (action: any) => void;
+  send: (action: GameActions) => void;
   position: IPosition;
   size: number;
 }
@@ -69,7 +70,10 @@ const Character: FC<IProps & HTMLAttributes<any>> = ({
     const watchKeyUp = (e: KeyboardEvent) => {
       switch (e.key) {
         case 'i':
-          send({ action: '' })
+          send({ type: 'OPEN_CUPBOARD' })
+          break;
+        case 's':
+          send({ type: 'OPEN_SPELL_BOOK' });
           break;
       }
       setMoving(false)

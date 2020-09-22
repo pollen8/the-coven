@@ -5,7 +5,7 @@ import {
 
 import { assign } from '@xstate/immer';
 
-import { IItem } from './Tile';
+import { IItem } from '../Tile';
 
 export interface ICupboard {
   items: IItem[];
@@ -74,12 +74,12 @@ export const cupboardMachine = Machine<CupboardContext, CupboardSchema, Cupboard
   }
 }, {
   actions: {
-    clearItem: assign((context: any) => context.item = null),
-    addItem: assign((context: any, event: any) => {
+    clearItem: assign((context) => context.item = null),
+    addItem: assign((context, event: any) => {
       context.cupboard.items.push(event.item);
     }),
-    removeItem: assign((context: any, event: any) => {
-      context.cupboard.items = context.cupboard.items.filter((i: any) => i.title !== event.item.title)
+    removeItem: assign((context, event: any) => {
+      context.cupboard.items = context.cupboard.items.filter((i) => i.title !== event.item.title)
     }),
   },
   guards: {
@@ -88,3 +88,4 @@ export const cupboardMachine = Machine<CupboardContext, CupboardSchema, Cupboard
     notEmpty: (context) => context.cupboard.items.length > 0
   }
 });
+

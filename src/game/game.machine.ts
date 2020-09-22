@@ -5,8 +5,10 @@ import { assign } from '@xstate/immer';
 import {
   cupboardMachine,
   ICupboard,
-} from './cupboard.machine';
+} from './cupboard/cupboard.machine';
+import { spellBookMachine } from './spellbook/spellbook.machine';
 import { ITile } from './Tile';
+import { IPosition } from './usePosition';
 
 const tileHasProp = (context: any, event: any) => {
   const { grid, position } = context;
@@ -14,19 +16,16 @@ const tileHasProp = (context: any, event: any) => {
   return tile.propImg;
 }
 
-interface IPosition {
-  x: number;
-  y: number;
-}
-
-type GameActions = { type: 'MOVE_DOWN' }
+export type GameActions = { type: 'MOVE_DOWN' }
   | { type: 'MOVE_UP' }
   | { type: 'MOVE_RIGHT' }
   | { type: 'MOVE_LEFT' }
   | { type: 'CHECK_PICKUP_PROP' }
+  | { type: 'OPEN_CUPBOARD' }
+  | { type: 'OPEN_SPELL_BOOK' }
   | { type: 'REMOVE_ITEM_FROM_MAP' };
 
-interface GameContext {
+export interface GameContext {
   grid: ITile[][];
   position: IPosition;
   cupboard: ICupboard;
@@ -37,7 +36,8 @@ interface GameContext {
 interface GameSchema {
   states: {
     initial: {};
-    openCupboard: {};
+    cupboard: {};
+    spellBook: {},
   };
 };
 
@@ -52,7 +52,7 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
     areaCols: 0,
     areaRows: 0,
     grid: [],
-    position: { x: 0, y: 0 },
+    position: { x: 0, y: 0, direction: 'right' },
   },
   on: {
     REMOVE_ITEM_FROM_MAP: {
@@ -62,6 +62,8 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   states: {
     initial: {
       on: {
+        OPEN_CUPBOARD: 'cupboard',
+        OPEN_SPELL_BOOK: 'spellBook',
         MOVE_DOWN: {
           actions: 'moveDown',
         },
@@ -75,7 +77,7 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
           actions: 'moveLeft',
         },
         CHECK_PICKUP_PROP: [{
-          target: 'openCupboard',
+          target: 'cupboard',
           cond: tileHasProp,
         },
         {
@@ -86,7 +88,7 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
       },
 
     },
-    openCupboard: {
+    cupboard: {
       invoke: {
         id: 'cupboardMachine',
         src: cupboardMachine,
@@ -103,14 +105,19 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
         },
       }
     },
-
-
+    spellBook: {
+      invoke: {
+        id: 'spellBookMachine',
+        src: spellBookMachine,
+        onDone: {
+          target: 'initial',
+        },
+      }
+    }
   }
 }, {
   actions: {
-    saveCupboard: assign((context: GameContext, event: any) => {
-      context.cupboard = event.data.cupboard;
-    }),
+    saveCupboard: assign((context: GameContext, { data }: any) => context.cupboard = data.cupboard),
     removeItemFromMap: assign((context: GameContext) => {
       const { grid, position } = context;
       const { title, name, description, value, propImg, ...rest } = grid[position.y][position.x];
@@ -118,28 +125,28 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
         ...rest
       }
     }),
-    moveDown: assign((context: any, event: any) => {
+    moveDown: assign((context) => {
       context.position = {
         ...context.position,
         y: Math.min(context.areaRows, context.position.y + 1),
         direction: 'down',
       }
     }),
-    moveUp: assign((context: any, event: any) => {
+    moveUp: assign((context) => {
       context.position = {
         ...context.position,
         y: Math.max(0, context.position.y - 1),
         direction: 'up',
       }
     }),
-    moveRight: assign((context: any, event: any) => {
+    moveRight: assign((context) => {
       context.position = {
         ...context.position,
         x: Math.min(context.areaCols, context.position.x + 1),
         direction: 'right',
       }
     }),
-    moveLeft: assign((context: any, event: any) => {
+    moveLeft: assign((context) => {
       context.position = {
         ...context.position,
         x: Math.max(0, context.position.x - 1),

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import useSound from 'use-sound';
 
-import soundTrack from '../media/soundtrack/Celestial.mp3';
+import soundTrack from '../../media/soundtrack/Celestial.mp3';
 
 export const ToggleAudio = () => {
   const [play, { stop, isPlaying }] = useSound(soundTrack);

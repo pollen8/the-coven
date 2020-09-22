@@ -6,6 +6,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 import { ApolloProvider } from '@apollo/react-hooks';
+import { inspect } from '@xstate/inspect';
 import { useMachine } from '@xstate/react';
 
 import { appMachine } from './app.machine';
@@ -19,6 +20,12 @@ import {
 } from './game/buildMap';
 import { GameUI } from './game/GameUI';
 import { HomePage } from './landingPage/HomePage';
+
+inspect({
+  url: "https://statecharts.io/inspect",
+  iframe: false
+});
+
 
 function App() {
   let context: any = localStorage.getItem('the-coven');

@@ -1,15 +1,13 @@
-import React, {
-  FC,
-  useEffect,
-} from 'react';
+import React, { FC } from 'react';
 import Modal from 'react-modal';
 
 import { useService } from '@xstate/react';
 
+import { useEscapeClose } from '../useEscapeClose';
 import {
   CupboardContext,
   CupboardEvent,
-} from '../cupboard.machine';
+} from './cupboard.machine';
 import { PickedUpItem } from './PickedUpItem';
 
 Modal.setAppElement('#root')
@@ -23,16 +21,7 @@ export const Cupboard: FC<IProps> = ({
   const service = interpreter.children.get('cupboardMachine');
   const [state, send] = useService<CupboardContext, CupboardEvent>(service as any);
   const { item, cupboard } = state.context;
-  useEffect(() => {
-    const esc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        send({ type: 'CLOSE' });
-      }
-    }
-    document.addEventListener('keydown', esc);
-
-    return () => document.removeEventListener('keydown', esc);
-  }, [send]);
+  useEscapeClose(send);
 
   return (<Modal
     isOpen={!state.matches('closed')}
