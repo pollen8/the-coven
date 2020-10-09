@@ -2,7 +2,7 @@ import React, {
   FC,
   useEffect,
   useMemo,
-  useReducer,
+  useState,
 } from 'react';
 import { useFrame } from 'react-three-fiber';
 import { PlainAnimator } from 'three-plain-animator/lib/plain-animator';
@@ -10,34 +10,6 @@ import { PlainAnimator } from 'three-plain-animator/lib/plain-animator';
 import { useTexture } from '@react-three/drei';
 
 import { GameActions } from './game.machine';
-
-interface IState {
-  moving: boolean;
-  position: [number, number, number];
-  key: string,
-}
-
-type Action = { type: 'setKey', key: string }
-  | { type: 'setPosition', position: [number, number, number] };
-
-
-const keyDownReducer = (state: IState, action: Action): IState => {
-  switch (action.type) {
-    case 'setPosition':
-      return {
-        ...state,
-        position: action.position,
-      }
-    case 'setKey': {
-      return {
-        ...state,
-        moving: action.key.includes('Arrow'),
-        key: action.key,
-      }
-    }
-  }
-  return state;
-};
 
 interface IProps {
   /** Path name to the texture containing the character's sprite canvas */
@@ -48,13 +20,11 @@ interface IProps {
   spriteColumns?: number;
   /** Frames per second */
   framesPerSecond?: number;
-  /** Initial position (x,y,z) */
-  initialPosition?: [number, number, number];
   /** Character's speed */
   speed?: number;
   /** Send events to the Game Machine */
   send: (action: GameActions) => void;
-  // position: IPosition;
+  statePosition: [number, number];
 }
 
 const Character: FC<IProps> = ({
@@ -62,23 +32,26 @@ const Character: FC<IProps> = ({
   spriteRows = 1,
   spriteColumns = 7,
   framesPerSecond = 10,
-  initialPosition = [0, 0, 2],
-  speed = 0.2,
+  speed = 0.5,
   send,
+  statePosition,
 }) => {
 
-  const initialState: IState = {
-    moving: false,
-    key: '',
-    position: initialPosition,
-  };
-
-  const [{ position, moving, key }, dispatch] = useReducer(keyDownReducer, initialState)
-
-  const watchKeyDown = useMemo(() => (e: KeyboardEvent) => dispatch({ type: 'setKey', key: e.key }), [dispatch]);
+  const [isMoving, setIsMoving] = useState(false);
+  const [position, setPosition] = useState<[number, number]>([0, 0]);
 
 
-  const watchKeyUp = useMemo(() => (e: KeyboardEvent) => dispatch({ type: 'setKey', key: '' }), [dispatch]);
+  const watchKeyDown = useMemo(() => (e: KeyboardEvent) => {
+    send({ type: 'KEY_DOWN', key: e.key, speed });
+    setIsMoving(e.key.includes('Arrow'))
+  }, [send, speed]);
+
+
+  const watchKeyUp = useMemo(() => (e: KeyboardEvent) => {
+    send({ type: 'KEY_DOWN', key: '', speed });
+    setIsMoving(false)
+  }, [send, speed]);
+
   useEffect(() => {
     document.addEventListener('keydown', watchKeyDown);
     document.addEventListener('keyup', watchKeyUp);
@@ -89,30 +62,15 @@ const Character: FC<IProps> = ({
   }, [watchKeyDown, watchKeyUp]);
 
   const texture = useTexture(spriteImage) as any;
-  const animator = useMemo(() => new PlainAnimator(texture, spriteColumns, spriteRows, moving ? spriteColumns * spriteRows : 1, framesPerSecond), [framesPerSecond, moving, spriteColumns, spriteRows, texture])
+  const animator = useMemo(() => new PlainAnimator(texture, spriteColumns, spriteRows, isMoving ? spriteColumns * spriteRows : 1, framesPerSecond), [framesPerSecond, isMoving, spriteColumns, spriteRows, texture])
 
-  // calling send() in the useFrame() slows things down as it sending stuff at 60fps.
-  // Could we send every x frames, but then positions could be out of step?
   useFrame(() => {
     animator.animate();
-    switch (key) {
-      case 'ArrowRight':
-        dispatch({ type: 'setPosition', position: [position[0] + speed, position[1], position[2]] });
-        break;
-      case 'ArrowLeft':
-        dispatch({ type: 'setPosition', position: [position[0] - speed, position[1], position[2]] });
-        break;
-      case 'ArrowUp':
-        dispatch({ type: 'setPosition', position: [position[0], position[1] + speed, position[2]] });
-        break;
-      case 'ArrowDown':
-        dispatch({ type: 'setPosition', position: [position[0], position[1] - speed, position[2]] });
-        break;
-    }
+    setPosition(statePosition ? statePosition : [0, 0])
   });
 
   return (
-    <mesh position={position}>
+    <mesh position={[...position, 2]}>
       <boxBufferGeometry attach="geometry" args={[1, 1, 0.1]} />
       <meshStandardMaterial
         attach="material"

@@ -2,19 +2,14 @@ import { Machine } from 'xstate';
 
 import { assign } from '@xstate/immer';
 
-export interface IPosition {
-  x: number;
-  y: number;
-};
-
 export type GameActions = { type: 'MOVE_DOWN' }
   | { type: 'MOVE_UP' }
   | { type: 'MOVE_RIGHT' }
   | { type: 'MOVE_LEFT' }
-  | { type: 'KEY_DOWN'; key: string; }
+  | { type: 'KEY_DOWN'; key: string; speed: number }
 
 export interface GameContext {
-  position: IPosition;
+  position: [number, number];
 }
 
 interface GameSchema {
@@ -27,7 +22,7 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   id: 'gameMachine',
   initial: 'initial',
   context: {
-    position: { x: 0, y: 0 },
+    position: [0, 0],
   },
   states: {
     initial: {
@@ -69,29 +64,17 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   }
 }, {
   actions: {
-    moveDown: assign((context) => {
-      context.position = {
-        ...context.position,
-        y: Math.max(0, context.position.y - 1),
-      }
+    moveDown: assign((context, event: any) => {
+      context.position[1] = context.position[1] - event.speed;
     }),
-    moveUp: assign((context) => {
-      context.position = {
-        ...context.position,
-        y: context.position.y + 1,
-      }
+    moveUp: assign((context, event: any) => {
+      context.position[1] = context.position[1] + event.speed;
     }),
-    moveRight: assign((context) => {
-      context.position = {
-        ...context.position,
-        x: context.position.x + 1,
-      }
+    moveRight: assign((context, event: any) => {
+      context.position[0] = context.position[0] + event.speed;
     }),
-    moveLeft: assign((context) => {
-      context.position = {
-        ...context.position,
-        x: context.position.x - 1,
-      }
+    moveLeft: assign((context, event: any) => {
+      context.position[0] = context.position[0] - event.speed;
     }),
   },
 });

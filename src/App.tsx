@@ -62,6 +62,7 @@ function App() {
     <Suspense fallback={<Loader />}>
       <Map level={level} />
       <Character
+        statePosition={current.context.position}
         send={send} />
     </Suspense>
   </Game>
