@@ -42,15 +42,28 @@ const Character: FC<IProps> = ({
 
 
   const watchKeyDown = useMemo(() => (e: KeyboardEvent) => {
-    send({ type: 'KEY_DOWN', key: e.key, speed });
+    switch (e.key) {
+      case 'ArrowLeft':
+        send({ type: 'MOVE_LEFT', speed });
+        break;
+      case 'ArrowRight':
+        send({ type: 'MOVE_RIGHT', speed });
+        break;
+      case 'ArrowUp':
+        send({ type: 'MOVE_UP', speed });
+        break;
+      case 'ArrowDown':
+        send({ type: 'MOVE_DOWN', speed });
+        break;
+    }
+    // send({ type: 'KEY_DOWN', key: e.key, speed });
     setIsMoving(e.key.includes('Arrow'))
   }, [send, speed]);
 
 
   const watchKeyUp = useMemo(() => (e: KeyboardEvent) => {
-    send({ type: 'KEY_DOWN', key: '', speed });
     setIsMoving(false)
-  }, [send, speed]);
+  }, []);
 
   useEffect(() => {
     document.addEventListener('keydown', watchKeyDown);

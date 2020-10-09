@@ -1,4 +1,7 @@
-import React, { FC } from 'react';
+import React, {
+  FC,
+  useMemo,
+} from 'react';
 import * as THREE from 'three';
 
 import { useTexture } from '@react-three/drei';
@@ -48,17 +51,19 @@ interface IProps {
 export const Map: FC<IProps> = ({
   level,
 }) => {
-
-  console.log('map...');
-
+  const flipped = useMemo(() => {
+    return {
+      map: level.map.reverse(),
+      objects: level.objects.reverse(),
+    };
+  }, [level])
   const textures = useTexture(tiles as any) as any[];
-
   const objects = useTexture(props as any) as any[];
 
   return (
     <>
       {
-        level.map.map((row, i) => {
+        flipped.map.map((row, i) => {
           return row.map((tile, j) => <Tile
             key={`tile-${i}-${j}`}
             position={[j, i, 0]}
@@ -66,7 +71,7 @@ export const Map: FC<IProps> = ({
         })
       }
       {
-        level.objects.map((row, i) => {
+        flipped.objects.map((row, i) => {
           return row.map((tile, j) => tile === 0 ? null : <Tile
             key={`object-${i}-${j}`}
             position={[j, i, 0]}

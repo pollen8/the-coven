@@ -21,7 +21,7 @@ inspect({
 
 const level = {
   map: [
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -43,8 +43,7 @@ const level = {
 }
 
 function Loader() {
-  const { active, progress, errors, item, loaded, total } = useProgress();
-  console.log({ active, progress, errors, item, loaded, total });
+  const { active, progress } = useProgress();
   if (!active) {
     return null
   }
@@ -54,13 +53,16 @@ function Loader() {
 function App() {
   const [current, send] = useMachine(gameMachine, {
     devTools: true,
+    context: {
+      level,
+    }
   });
 
   return <Game cameraZoom={40}>
     <ambientLight />
     <pointLight position={[10, 10, 10]} />
     <Suspense fallback={<Loader />}>
-      <Map level={level} />
+      <Map level={current.context.level} />
       <Character
         statePosition={current.context.position}
         send={send} />
