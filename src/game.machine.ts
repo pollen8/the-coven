@@ -7,8 +7,9 @@ export type GameActions = { type: 'MOVE_DOWN'; speed: number }
   | { type: 'MOVE_RIGHT'; speed: number }
   | { type: 'MOVE_LEFT'; speed: number }
 
-interface ILevel {
+export interface ILevel {
   map: number[][];
+  scenery: number[][];
   objects: number[][];
 }
 
@@ -31,6 +32,7 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
     position: [0, 0],
     level: {
       map: [],
+      scenery: [],
       objects: [],
     }
   },
@@ -58,6 +60,7 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
     },
   }
 }, {
+  // @TODO the guard logic needs to be updated as we've flipped over the map x rows to start at the top
   guards: {
     canMoveDown: (context, event: any) => {
       const next: [number, number] = [context.position[0], Math.floor(context.position[1] - event.speed)];
@@ -101,5 +104,5 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
 });
 
 const isEmptyTile = (level: ILevel, position: [number, number]) => {
-  return level.objects[Math.floor(position[1])][Math.floor(position[0])] === 0;
+  return level.scenery[Math.floor(position[1])][Math.floor(position[0])] === 0;
 }

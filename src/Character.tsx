@@ -56,7 +56,6 @@ const Character: FC<IProps> = ({
         send({ type: 'MOVE_DOWN', speed });
         break;
     }
-    // send({ type: 'KEY_DOWN', key: e.key, speed });
     setIsMoving(e.key.includes('Arrow'))
   }, [send, speed]);
 
