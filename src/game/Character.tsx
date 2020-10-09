@@ -73,21 +73,21 @@ const Character: FC<IProps> = ({
 
   const [{ position, moving, key }, dispatch] = useReducer(keyDownReducer, initialState)
 
-  // const watchKeyDown = useMemo(() => (e: KeyboardEvent) => dispatch({ type: 'setKey', key: e.key }), [dispatch]);
+  const watchKeyDown = useMemo(() => (e: KeyboardEvent) => dispatch({ type: 'setKey', key: e.key }), [dispatch]);
 
-  const watchKeyDown = useMemo(() => (e: KeyboardEvent) => {
-    switch (e.key) {
-      case 'ArrowRight':
-        return send({ type: 'setPosition', position: [position[0] + speed, position[1], position[2]] });
-      case 'ArrowLeft':
-        return send({ type: 'setPosition', position: [position[0] - speed, position[1], position[2]] });
-      case 'ArrowUp':
-        return send({ type: 'setPosition', position: [position[0], position[1] + speed, position[2]] });
-      case 'ArrowDown':
-        return send({ type: 'setPosition', position: [position[0], position[1] - speed, position[2]] });
-    }
-    // dispatch({ type: 'setKey', key: e.key })
-  }, [position, speed]);
+  // const watchKeyDown = useMemo(() => (e: KeyboardEvent) => {
+  //   switch (e.key) {
+  //     case 'ArrowRight':
+  //       return send({ type: 'setPosition', position: [position[0] + speed, position[1], position[2]] });
+  //     case 'ArrowLeft':
+  //       return send({ type: 'setPosition', position: [position[0] - speed, position[1], position[2]] });
+  //     case 'ArrowUp':
+  //       return send({ type: 'setPosition', position: [position[0], position[1] + speed, position[2]] });
+  //     case 'ArrowDown':
+  //       return send({ type: 'setPosition', position: [position[0], position[1] - speed, position[2]] });
+  //   }
+  //   // dispatch({ type: 'setKey', key: e.key })
+  // }, [position, speed]);
 
   const watchKeyUp = useMemo(() => (e: KeyboardEvent) => dispatch({ type: 'setKey', key: '' }), [dispatch]);
   useEffect(() => {
