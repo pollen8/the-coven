@@ -1,30 +1,32 @@
 import React, {
   FC,
   Suspense,
+  useReducer,
 } from 'react';
 
 import {
   Html,
   useProgress,
 } from '@react-three/drei';
-import { useService } from '@xstate/react';
+import { useMachine } from '@xstate/react';
 
 import { Game } from './@core/Game';
 import { Map } from './@core/Map';
+import {
+  areaCols,
+  areaRows,
+  grid,
+  position,
+} from './buildMap';
 import Character from './Character';
 import { Controls } from './controls/Controls';
 import { Cupboard } from './cupboard/Cupboard';
-import {
-  GameActions,
-  GameContext,
-} from './game.machine';
+import { gameMachine } from './game.machine';
 import { SpellBook } from './spellbook/SpellBook';
 
 export const tileSize = 32;
 
-interface IProps {
-  current: any;
-}
+
 
 function Loader() {
   const { active, progress, errors, item, loaded, total } = useProgress();
@@ -58,12 +60,62 @@ const level = {
   ]
 }
 
-export const GameUI: FC<IProps> = ({
-  current,
-}) => {
-  const service = current.children.gameMachine;
-  const [state, send, gameInterpreter] = useService<GameContext, GameActions>(service as any);
-  const { position, grid } = state.context;
+
+interface IState {
+  moving: boolean;
+  position: [number, number, number];
+  key: string,
+}
+
+type Action = { type: 'setKey', key: string }
+  | { type: 'setPosition', position: [number, number, number] };
+
+
+
+
+const keyDownReducer = (state: IState, action: Action): IState => {
+  console.log('key red', action);
+  switch (action.type) {
+    case 'setPosition':
+      return {
+        ...state,
+        position: action.position,
+      }
+    case 'setKey': {
+      return {
+        ...state,
+        moving: action.key.includes('Arrow'),
+        key: action.key,
+      }
+    }
+  }
+  return state;
+};
+
+export const GameUI: FC = () => {
+  let context: any = localStorage.getItem('the-coven');
+  context = context ? JSON.parse(context) : {
+    grid,
+    areaCols,
+    areaRows,
+    position: { x: 0, y: 0, direction: 'right' },
+  };
+
+  const [current, send] = useMachine(gameMachine, {
+    devTools: true,
+    context,
+  });
+
+  const p = current.context.position
+
+  const initialState: IState = {
+    moving: false,
+    key: '',
+    position: [p.x, p.y, 2],
+  };
+
+  const [{ position, moving, key }, dispatch] = useReducer(keyDownReducer, initialState)
+
 
 
   return (
@@ -73,7 +125,11 @@ export const GameUI: FC<IProps> = ({
       <Suspense fallback={<Loader />}>
         <Map level={level} />
         <Character
-          send={send} />
+          send={send}
+          moving={moving}
+          keyPressed={key}
+          dispatch={dispatch}
+          position={position} />
       </Suspense>
     </Game>
 
