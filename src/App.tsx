@@ -1,9 +1,6 @@
 import './App.css';
 
 import React from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { BrowserRouter as Router } from 'react-router-dom';
 
 import { ApolloProvider } from '@apollo/react-hooks';
 import { inspect } from '@xstate/inspect';
@@ -43,26 +40,26 @@ function App() {
 
   return (
     <ApolloProvider client={client}>
-      <Router>
-        <DndProvider backend={HTML5Backend}>
-          <div className="App">
-            {
-              (current.matches('landing') || current.matches('addWitch')) && <HomePage
-                state={current}
-                send={send}
-                interpreter={interpreter} />
-            }
-            {
-              current.matches('playing') && <GameUI
-                current={current} />
-            }
-            {
-              current.matches('editing') && <Editor
-                interpreter={interpreter} />
-            }
-          </div>
-        </DndProvider>
-      </Router>
+      {/* <Router> */}
+      {/* <DndProvider backend={HTML5Backend}> */}
+      <div className="App" style={{ height: '100%', width: '100%' }}>
+        {
+          (current.matches('landing') || current.matches('addWitch')) && <HomePage
+            state={current}
+            send={send}
+            interpreter={interpreter} />
+        }
+        {
+          current.matches('playing') && <GameUI
+            current={current} />
+        }
+        {
+          current.matches('editing') && <Editor
+            interpreter={interpreter} />
+        }
+      </div>
+      {/* </DndProvider> */}
+      {/* </Router> */}
     </ApolloProvider>
   );
 }

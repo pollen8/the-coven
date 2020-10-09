@@ -8,13 +8,20 @@ import {
 } from './cupboard/cupboard.machine';
 import { spellBookMachine } from './spellbook/spellbook.machine';
 import { ITile } from './Tile';
-import { IPosition } from './usePosition';
 
 const tileHasProp = (context: any, event: any) => {
   const { grid, position } = context;
   const tile = grid[position.y][position.x];
   return tile.propImg;
 }
+
+export type Direction = 'up' | 'down' | 'left' | 'right';
+
+export interface IPosition {
+  x: number;
+  y: number;
+  direction: Direction;
+};
 
 export type GameActions = { type: 'MOVE_DOWN' }
   | { type: 'MOVE_UP' }
