@@ -1,22 +1,18 @@
-import './App.css';
 
-import React from 'react';
 
-import { ApolloProvider } from '@apollo/react-hooks';
+import React, { Suspense } from 'react';
+
+import {
+  Html,
+  useProgress,
+} from '@react-three/drei';
 import { inspect } from '@xstate/inspect';
 import { useMachine } from '@xstate/react';
 
-import { appMachine } from './app.machine';
-import { client } from './client';
-import { Editor } from './editor/Editor';
-import {
-  areaCols,
-  areaRows,
-  grid,
-  position,
-} from './game/buildMap';
-import { GameUI } from './game/GameUI';
-import { HomePage } from './landingPage/HomePage';
+import { Game } from './@core/Game';
+import { Map } from './@core/Map';
+import Character from './Character';
+import { gameMachine } from './game.machine';
 
 inspect({
   url: "https://statecharts.io/inspect",
@@ -24,44 +20,53 @@ inspect({
 });
 
 
-function App() {
-  let context: any = localStorage.getItem('the-coven');
-  context = context ? JSON.parse(context) : {
-    grid,
-    areaCols,
-    areaRows,
-    position,
-  };
+const level = {
+  map: [
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ],
+  objects: [
+    [0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+  ]
+}
 
-  const [current, send, interpreter] = useMachine(appMachine, {
+function Loader() {
+  const { active, progress, errors, item, loaded, total } = useProgress();
+  console.log({ active, progress, errors, item, loaded, total });
+  if (!active) {
+    return null
+  }
+  return <Html center>{progress} % loaded</Html>
+}
+
+function App() {
+  const [current, send] = useMachine(gameMachine, {
     devTools: true,
-    context,
   });
 
-  return (
-    <ApolloProvider client={client}>
-      {/* <Router> */}
-      {/* <DndProvider backend={HTML5Backend}> */}
-      <div className="App" style={{ height: '100%', width: '100%' }}>
-        {
-          (current.matches('landing') || current.matches('addWitch')) && <HomePage
-            state={current}
-            send={send}
-            interpreter={interpreter} />
-        }
-        {
-          current.matches('playing') && <GameUI
-            current={current} />
-        }
-        {
-          current.matches('editing') && <Editor
-            interpreter={interpreter} />
-        }
-      </div>
-      {/* </DndProvider> */}
-      {/* </Router> */}
-    </ApolloProvider>
-  );
+  return <Game cameraZoom={40}>
+    <ambientLight />
+    <pointLight position={[10, 10, 10]} />
+    <Suspense fallback={<Loader />}>
+      <Map level={level} />
+      <Character
+        send={send} />
+    </Suspense>
+  </Game>
+
 }
 
 export default App;
