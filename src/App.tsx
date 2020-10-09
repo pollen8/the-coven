@@ -19,7 +19,6 @@ inspect({
   iframe: false
 });
 
-
 const level = {
   map: [
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -66,7 +65,6 @@ function App() {
         send={send} />
     </Suspense>
   </Game>
-
 }
 
 export default App;
