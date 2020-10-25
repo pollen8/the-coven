@@ -63,14 +63,14 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   // @TODO the guard logic needs to be updated as we've flipped over the map x rows to start at the top
   guards: {
     canMoveDown: (context, event: any) => {
-      const next: [number, number] = [context.position[0], Math.floor(context.position[1] - event.speed)];
-      return next[1] < 0
+      const next: [number, number] = [context.position[0], Math.ceil(context.position[1] + event.speed)];
+      return next[1] >= context.level.map.length
         ? false
         : isEmptyTile(context.level, next);
     },
     canMoveUp: (context, event: any) => {
-      const next: [number, number] = [context.position[0], Math.ceil(context.position[1] + event.speed)];
-      return next[1] >= context.level.map.length
+      const next: [number, number] = [context.position[0], Math.floor(context.position[1] - event.speed)];
+      return next[1] < 0
         ? false
         : isEmptyTile(context.level, next);
     },
@@ -89,10 +89,11 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   },
   actions: {
     moveDown: assign((context, event: any) => {
-      context.position[1] = context.position[1] - event.speed;
+      context.position[1] = context.position[1] + event.speed;
     }),
     moveUp: assign((context, event: any) => {
-      context.position[1] = context.position[1] + event.speed;
+      context.position[1] = context.position[1] - event.speed;
+
     }),
     moveRight: assign((context, event: any) => {
       context.position[0] = context.position[0] + event.speed;

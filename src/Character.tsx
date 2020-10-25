@@ -9,6 +9,7 @@ import { PlainAnimator } from 'three-plain-animator/lib/plain-animator';
 
 import { useTexture } from '@react-three/drei';
 
+import GameObject from './@core/GameObject';
 import { GameActions } from './game.machine';
 
 interface IProps {
@@ -25,6 +26,7 @@ interface IProps {
   /** Send events to the Game Machine */
   send: (action: GameActions) => void;
   statePosition: [number, number];
+  translatePosition: ([x, y]: [number, number]) => [number, number];
 }
 
 const Character: FC<IProps> = ({
@@ -35,6 +37,7 @@ const Character: FC<IProps> = ({
   speed = 0.5,
   send,
   statePosition,
+  translatePosition,
 }) => {
 
   const [isMoving, setIsMoving] = useState(false);
@@ -82,13 +85,16 @@ const Character: FC<IProps> = ({
   });
 
   return (
-    <mesh position={[...position, 2]}>
-      <boxBufferGeometry attach="geometry" args={[1, 1, 0.1]} />
-      <meshStandardMaterial
-        attach="material"
-        map={texture}
-        transparent={true} />
-    </mesh>
+    <GameObject>
+      <mesh position={[...translatePosition(position), 2]}>
+        <boxBufferGeometry attach="geometry" args={[1, 1, 0.1]} />
+        <meshStandardMaterial
+          attach="material"
+          map={texture}
+          transparent={true} />
+      </mesh>
+    </GameObject>
+
   )
 }
 

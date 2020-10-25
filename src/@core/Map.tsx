@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { useTexture } from '@react-three/drei';
 
 import { ILevel } from '../game.machine';
+import GameObject from './GameObject';
 
 const geometry = new THREE.PlaneBufferGeometry(1, 1);
 const generics = new Array(71).fill('').map((_, i) => `./tiles/generic-rpg-tile${i < 9 ? '0' + (i + 1) : i + 1}.png`)
@@ -39,17 +40,19 @@ const Tile: FC<ITile> = ({
   scale = [1, 1, 1],
 }) => {
   return (
-    <mesh
-      position={position}
-      scale={scale}
-      geometry={geometry}
-    >
-      <meshBasicMaterial
-        transparent
-        alphaTest={0.6}
-        map={texture}
-      />
-    </mesh>
+    <GameObject>
+      <mesh
+        position={position}
+        scale={scale}
+        geometry={geometry}
+      >
+        <meshBasicMaterial
+          transparent
+          alphaTest={0.6}
+          map={texture}
+        />
+      </mesh>
+    </GameObject>
   )
 }
 
