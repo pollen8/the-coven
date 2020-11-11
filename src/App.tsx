@@ -1,8 +1,8 @@
-
-
-import React, { Suspense } from 'react';
-import { useFrame } from 'react-three-fiber';
-import { OrthographicCamera } from 'three';
+import { Graph } from 'javascript-astar';
+import React, {
+  Suspense,
+  useMemo,
+} from 'react';
 
 import {
   Html,
@@ -11,8 +11,9 @@ import {
 import { inspect } from '@xstate/inspect';
 import { useMachine } from '@xstate/react';
 
+import Dolly from './@core/Dolly';
 import { Game } from './@core/Game';
-import { Map } from './@core/Map';
+import Map from './@core/Map';
 import Character from './Character';
 import { gameMachine } from './game.machine';
 
@@ -23,18 +24,27 @@ inspect({
 
 const level = {
   map: [
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  ],
+  walls: [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   ],
   scenery: [
-    [0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -68,41 +78,30 @@ function App() {
     devTools: true,
     context: {
       level,
+      graph: new Graph(level.walls),
     }
   });
 
+  console.log('app render');
+  const l = useMemo(() => current.context.level, [current.context.level]);
   return <Game cameraZoom={40}>
     <ambientLight />
     <pointLight position={[10, 10, 10]} />
     <Suspense fallback={<Loader />}>
-      <Dolly />
-      <Map level={current.context.level} />
+      {/* <Dolly center={current.context.position} /> */}
+      <Map level={l}
+        onClick={(p) => {
+          send({ type: 'MOVE_CHARACTER_TO', position: p })
+        }}
+      />
       <Character
         statePosition={current.context.position}
-        translatePosition={([x, y]) => [x, current.context.level.map.length - y - 1]}
+        isMoving={current.matches('moving')}
+        // translatePosition={([x, y]) => [x, current.context.level.map.length - y - 1]}
+        translatePosition={([x, y]) => [x, y]}
         send={send} />
     </Suspense>
   </Game>
 }
 
 export default App;
-
-// @TODO - when the character gets within a certain bounds of the screen we should scroll the camera
-// This means putting its offset in the machine context, calculated when we move transition in the machine.
-// The characters game position would be a vector of its screen position + the camera offset.
-let i = 0;
-const Dolly = () => {
-  // This one makes the camera move to the right
-  useFrame(({ clock, camera }) => {
-    const c = camera as OrthographicCamera;
-    if (i < 40 && clock.elapsedTime > 1) {
-
-      c.left = c.left + 1;
-      camera.updateProjectionMatrix()
-      // console.log(clock, camera);
-      i++
-    }
-  })
-
-  return null
-}

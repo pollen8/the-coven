@@ -17,7 +17,6 @@ export const Game: FC<IProps> = ({
         far: 64,
       }}
       orthographic
-      noEvents
       // gl2
       // @ts-ignore
       gl={{ antialias: false }}

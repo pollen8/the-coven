@@ -1,4 +1,7 @@
-import React, { FC } from 'react';
+import React, {
+  FC,
+  memo,
+} from 'react';
 import * as THREE from 'three';
 
 import { useTexture } from '@react-three/drei';
@@ -33,15 +36,18 @@ interface ITile {
   position: [number, number, number];
   texture: THREE.Texture;
   scale?: [number, number, number];
+  onClick?: () => void;
 }
 const Tile: FC<ITile> = ({
   position,
   texture,
   scale = [1, 1, 1],
+  onClick,
 }) => {
   return (
     <GameObject>
       <mesh
+        onClick={onClick}
         position={position}
         scale={scale}
         geometry={geometry}
@@ -58,21 +64,23 @@ const Tile: FC<ITile> = ({
 
 interface IProps {
   level: ILevel;
+  onClick?: (position: [number, number]) => void;
 }
-
-export const Map: FC<IProps> = ({
+const Map: FC<IProps> = ({
   level,
+  onClick,
 }) => {
 
   const textures = useTexture(tiles as any) as any[];
   const objects = useTexture(loot as any) as any[];
   const scenery = useTexture(backgrounds as any) as any[];
-
+  console.log('map render', onClick);
   return (
     <>
       {
         level.map.map((row, i) => {
           return row.map((tile, j) => <Tile
+            onClick={() => onClick && onClick([j, level.map.length - 1 - i])}
             key={`tile-${i}-${j}`}
             position={[j, level.map.length - 1 - i, 0]}
             texture={textures[tile]} />)
@@ -98,3 +106,5 @@ export const Map: FC<IProps> = ({
     </>
   )
 }
+
+export default memo(Map);
