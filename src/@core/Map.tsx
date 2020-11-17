@@ -16,10 +16,6 @@ const tiles = [
 
 ].concat(generics);
 
-// @TODO = the center 0,0 is in the middle of the canvas so our map needs to be displaced up to the top left:
-// Perhaps something like:
-// x -> x - (w / 2)
-// y -> y + (h / 2)
 const backgrounds = [
   './props/generic-rpg-fence01.png',
   './props/generic-rpg-fence02.png',
@@ -74,13 +70,12 @@ const Map: FC<IProps> = ({
   const textures = useTexture(tiles as any) as any[];
   const objects = useTexture(loot as any) as any[];
   const scenery = useTexture(backgrounds as any) as any[];
-  console.log('map render', onClick);
   return (
     <>
       {
         level.map.map((row, i) => {
           return row.map((tile, j) => <Tile
-            onClick={() => onClick && onClick([j, level.map.length - 1 - i])}
+            onClick={() => onClick && onClick([j, i])}
             key={`tile-${i}-${j}`}
             position={[j, level.map.length - 1 - i, 0]}
             texture={textures[tile]} />)

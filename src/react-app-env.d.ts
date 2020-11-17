@@ -5,5 +5,3 @@ declare module '*.mp3' {
 }
 
 declare module 'use-image';
-declare module 'javascript-astar';
-

@@ -77,9 +77,11 @@ const Character: FC<IProps> = ({
   useFrame(() => {
     animator.animate();
     const p: [number, number] = statePosition ? statePosition : [0, 0];
-    setPosition(translatePosition(p));
+    const newP = translatePosition(p);
+    if (newP[0] !== position[0] || newP[1] !== position[1]) {
+      setPosition(newP);
+    }
   });
-
   return (
     <GameObject>
       <mesh

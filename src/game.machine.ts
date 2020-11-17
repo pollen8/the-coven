@@ -1,7 +1,11 @@
-import { astar } from 'javascript-astar';
 import { Machine } from 'xstate';
 
 import { assign } from '@xstate/immer';
+
+import {
+  astar,
+  Graph,
+} from './@core/astar';
 
 export type GameActions = { type: 'MOVE_DOWN'; speed: number }
   | { type: 'MOVE_UP'; speed: number }
@@ -20,11 +24,6 @@ export interface ILevel {
 export interface GameContext {
   position: [number, number];
   level: ILevel;
-  //  Used for A-Stat path finding
-  graph: {
-    grid: any[]
-  };
-  // AStar path to interate over
   path: IGraphStep[];
 }
 
@@ -49,9 +48,6 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   context: {
     position: [0, 0],
     path: [],
-    graph: {
-      grid: [],
-    },
     level: {
       map: [],
       walls: [],
@@ -65,23 +61,6 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
         MOVE_CHARACTER_TO: {
           actions: 'makePath',
           target: 'moving',
-        },
-
-        MOVE_DOWN: {
-          actions: 'moveDown',
-          cond: 'canMoveDown',
-        },
-        MOVE_UP: {
-          actions: 'moveUp',
-          cond: 'canMoveUp',
-        },
-        MOVE_RIGHT: {
-          actions: 'moveRight',
-          cond: 'canMoveRight',
-        },
-        MOVE_LEFT: {
-          actions: 'moveLeft',
-          cond: 'canMoveLeft',
         },
       },
     },
@@ -103,43 +82,19 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
     }
   }
 }, {
-  // @TODO the guard logic needs to be updated as we've flipped over the map x rows to start at the top
   guards: {
-    canMoveUp: (context, event: any) => {
-      const next: [number, number] = [context.position[0], Math.ceil(context.position[1] + event.speed)];
-      return next[1] >= context.level.map.length
-        ? false
-        : isEmptyTile(context.level, next);
-    },
-    canMoveDown: (context, event: any) => {
-      const next: [number, number] = [context.position[0], Math.floor(context.position[1] - event.speed)];
-      return next[1] < 0
-        ? false
-        : isEmptyTile(context.level, next);
-    },
-    canMoveRight: (context, event: any) => {
-      const next: [number, number] = [Math.ceil(context.position[0] + event.speed), context.position[1]];
-      return next[0] >= context.level.map[0].length
-        ? false
-        : isEmptyTile(context.level, next);
-    },
-    canMoveLeft: (context, event: any) => {
-      const next: [number, number] = [Math.floor(context.position[0] - event.speed), context.position[1]];
-      return next[0] < 0
-        ? false
-        : isEmptyTile(context.level, next);
-    },
     hasPath: (context) => context.path.length > 0,
-    hasNoPath: (context) => context.path.length === 0,
+    hasNoPath: (context) => {
+      return context.path.length === 0;
+    },
   },
   actions: {
     makePath: assign((context, event: any) => {
-      const grid = context.graph.grid;
-      console.log(grid, event.position);
-      const start = grid[context.position[0]][context.position[1]];
-      const end = grid[event.position[0]][event.position[1]];
-      var result = astar.search(context.graph, start, end);
-      console.log('result', result, start, end);
+      const graph = new Graph(context.level.walls, { diagonal: true })
+      const start = graph.grid[context.position[1]][context.position[0]];
+      const end = graph.grid[event.position[1]][event.position[0]];
+      var result = astar.search(graph, start, end, { closest: true });
+
       context.path = result;
     }),
     popPath: assign((context) => {
@@ -157,40 +112,18 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
       const xDelta = next.x - next.parent.x;
       const yDelta = next.y - next.parent.y;
       if (yDelta === 1) {
-        console.log('move up');
-        context.position[1] = context.position[1] + 1;
-      }
-      if (yDelta === -1) {
-        console.log('move down');
-        context.position[1] = context.position[1] - 1;
-      }
-      if (xDelta === 1) {
-        console.log('move right');
         context.position[0] = context.position[0] + 1;
       }
-      if (xDelta === -1) {
-        console.log('move left');
+      if (yDelta === -1) {
         context.position[0] = context.position[0] - 1;
       }
-      console.log(xDelta, yDelta);
+      if (xDelta === 1) {
+        context.position[1] = context.position[1] + 1;
+      }
+      if (xDelta === -1) {
+        context.position[1] = context.position[1] - 1;
+      }
     }),
-    moveDown: assign((context, event: any) => {
-      console.log('move down ', event);
-      context.position[1] = context.position[1] - event.speed;
-    }),
-    moveUp: assign((context, event: any) => {
-      context.position[1] = context.position[1] + event.speed;
 
-    }),
-    moveRight: assign((context, event: any) => {
-      context.position[0] = context.position[0] + event.speed;
-    }),
-    moveLeft: assign((context, event: any) => {
-      context.position[0] = context.position[0] - event.speed;
-    }),
   },
 });
-
-const isEmptyTile = (level: ILevel, position: [number, number]) => {
-  return level.scenery[Math.floor(position[1])][Math.floor(position[0])] === 0;
-}
