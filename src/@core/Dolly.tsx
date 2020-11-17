@@ -14,6 +14,8 @@ interface IProps {
 // This means putting its offset in the machine context, calculated when we move transition in the machine.
 // The characters game position would be a vector of its screen position + the camera offset.
 
+// Check out https://github.com/mbritton/britton-www/blob/development/src/App.js
+
 const Dolly: FC<IProps> = ({
   center,
 }) => {
