@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { useTexture } from '@react-three/drei';
 
 import { ILevel } from '../game.machine';
+import { items } from '../items';
 import GameObject from './GameObject';
 
 const geometry = new THREE.PlaneBufferGeometry(1, 1);
@@ -22,11 +23,6 @@ const backgrounds = [
   './props/generic-rpg-fence06.png',
 ];
 
-const loot = [
-  './props/generic-rpg-loot03.png',
-  './props/generic-rpg-loot04.png',
-  './props/generic-rpg-loot05.png',
-]
 
 interface ITile {
   position: [number, number, number];
@@ -66,7 +62,7 @@ const Map: FC<IProps> = ({
   level,
   onClick,
 }) => {
-
+  const loot = items.filter((i) => i.hasOwnProperty('img')).map((i) => i.img);
   const textures = useTexture(tiles as any) as any[];
   const objects = useTexture(loot as any) as any[];
   const scenery = useTexture(backgrounds as any) as any[];

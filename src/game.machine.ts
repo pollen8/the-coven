@@ -1,4 +1,9 @@
-import { Machine } from 'xstate';
+import {
+  Actor,
+  Machine,
+  spawn,
+  State,
+} from 'xstate';
 
 import { assign } from '@xstate/immer';
 
@@ -6,12 +11,23 @@ import {
   astar,
   Graph,
 } from './@core/astar';
+import {
+  cupboardMachine,
+  IItem,
+} from './cupboard/cupboard.machine';
+import { items } from './items';
 
 export type GameActions = { type: 'MOVE_DOWN'; speed: number }
   | { type: 'MOVE_UP'; speed: number }
   | { type: 'MOVE_RIGHT'; speed: number }
   | { type: 'MOVE_LEFT'; speed: number }
-  | { type: 'MOVE_CHARACTER_TO', position: [number, number] };
+  | { type: 'MOVE_CHARACTER_TO', position: [number, number] }
+  | { type: 'OPEN_CUPBOARD' }
+  | { type: 'CLOSE_CUPBOARD' }
+  | { type: 'CHECK_PICKUP_ITEM' }
+  | { type: 'REMOVE_ITEM_FROM_MAP' }
+  | { type: 'ADD_ITEM_TO_MAP', item: IItem };
+;
 
 export interface ILevel {
   map: number[][];
@@ -22,6 +38,8 @@ export interface ILevel {
 }
 
 export interface GameContext {
+  cupboard: Actor<State<any, any>, any> | null;
+  pickedUp: IItem | null;
   position: [number, number];
   level: ILevel;
   path: IGraphStep[];
@@ -31,6 +49,7 @@ export interface GameContext {
 interface GameSchema {
   states: {
     initial: {};
+    cupboard: {},
     moving: {},
   };
 };
@@ -46,6 +65,8 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   id: 'gameMachine',
   initial: 'initial',
   context: {
+    cupboard: null,
+    pickedUp: null,
     position: [0, 0],
     path: [],
     level: {
@@ -58,10 +79,47 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   states: {
     initial: {
       on: {
+        OPEN_CUPBOARD: 'cupboard',
+        CHECK_PICKUP_ITEM: [{
+          target: 'cupboard',
+          cond: 'tileHasItem',
+          actions: 'pickupItem',
+        }, {
+          target: 'cupboard',
+        }
+        ],
         MOVE_CHARACTER_TO: {
           actions: 'makePath',
           target: 'moving',
         },
+      },
+    },
+    cupboard: {
+      // invoke: {
+      //   src: cupboardMachine,
+      //   id: 'cupboardMachine',
+      //   onDone: 'initial',
+      //   data: {
+      //     item: (context: GameContext) => context.pickedUp,
+      //   },
+      // },
+      entry: assign((context) => {
+        if (!context.cupboard) {
+          context.cupboard = spawn(cupboardMachine, 'cupboardMachine');
+        }
+        context.cupboard.send({ type: 'OPEN' });
+        context.cupboard.send({ type: 'SET_ITEM', item: JSON.parse(JSON.stringify(context.pickedUp)) });
+      }),
+      on: {
+        CLOSE_CUPBOARD: 'initial',
+        REMOVE_ITEM_FROM_MAP: {
+          target: '.',
+          actions: 'removeItemFromMap',
+        },
+        ADD_ITEM_TO_MAP: {
+          target: '.',
+          actions: 'addItemToMap',
+        }
       },
     },
     moving: {
@@ -87,6 +145,9 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
     hasNoPath: (context) => {
       return context.path.length === 0;
     },
+    tileHasItem: (context) => {
+      return context.level.objects[context.position[1]][context.position[0]] !== 0;
+    }
   },
   actions: {
     makePath: assign((context, event: any) => {
@@ -96,6 +157,20 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
       var result = astar.search(graph, start, end, { closest: true });
 
       context.path = result;
+    }),
+    pickupItem: assign((context) => {
+      const { position } = context;
+      context.pickedUp = items[Math.floor(context.level.objects[position[1]][position[0]])];
+    }),
+    removeItemFromMap: assign((context) => {
+      const { position } = context;
+
+      context.level.objects[position[1]][position[0]] = 0;
+    }),
+    addItemToMap: assign((context, event: any) => {
+      const { position } = context;
+      console.log('addItemToMap, event =', event);
+      context.level.objects[position[1]][position[0]] = event.item.id;
     }),
     popPath: assign((context) => {
       if (context.path.length === 0) {
@@ -108,7 +183,6 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
         return;
       }
       const next = context.path[0];
-      console.log('next', next);
       const xDelta = next.x - next.parent.x;
       const yDelta = next.y - next.parent.y;
       if (yDelta === 1) {

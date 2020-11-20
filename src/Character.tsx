@@ -60,6 +60,9 @@ const Character: FC<IProps> = ({
       case 'ArrowDown':
         send({ type: 'MOVE_DOWN', speed });
         break;
+      case ' ':
+        send({ type: 'CHECK_PICKUP_ITEM' });
+        break;
     }
   }, [send, speed]);
 
