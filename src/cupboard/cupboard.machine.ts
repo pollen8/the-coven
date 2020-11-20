@@ -49,11 +49,7 @@ export const cupboardMachine = Machine<CupboardContext, CupboardSchema, Cupboard
   },
   states: {
     closed: {
-      // type: 'final',
-      onEntry: sendParent('CLOSE_CUPBOARD'),
-      // data: {
-      //   cupboard: (context: CupboardContext) => context.cupboard,
-      // }
+      onEntry: ['clearItem', sendParent('CLOSE_CUPBOARD')],
       on: {
         OPEN: 'open',
       },
@@ -64,8 +60,6 @@ export const cupboardMachine = Machine<CupboardContext, CupboardSchema, Cupboard
         ADD_ITEM: [{
           target: '.',
           actions: ['addItem', 'clearItem', sendParent('REMOVE_ITEM_FROM_MAP')],
-
-          // actions: ['addItem'],
           cond: 'notFull'
         },
         {
@@ -74,10 +68,11 @@ export const cupboardMachine = Machine<CupboardContext, CupboardSchema, Cupboard
         }],
         REMOVE_ITEM: {
           target: '.',
-          actions: ['removeItem', sendParent((context, event) => ({
-            item: event.item,
-            type: 'ADD_ITEM_TO_MAP'
-          }))],
+          actions: ['removeItem',
+            sendParent((context, event) => ({
+              item: event.item,
+              type: 'ADD_ITEM_TO_MAP'
+            }))],
           cond: 'notEmpty'
         },
         SET_ITEM: {
@@ -98,6 +93,7 @@ export const cupboardMachine = Machine<CupboardContext, CupboardSchema, Cupboard
     setItem: assign((context, event: any) => context.item = event.item),
     clearItem: assign((context) => context.item = null),
     addItem: assign((context, event: any) => {
+      context.item = null;
       context.cupboard.items.push(event.item);
     }),
     removeItem: assign((context, event: any) => {

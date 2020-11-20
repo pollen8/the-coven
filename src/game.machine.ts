@@ -111,7 +111,10 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
         context.cupboard.send({ type: 'SET_ITEM', item: JSON.parse(JSON.stringify(context.pickedUp)) });
       }),
       on: {
-        CLOSE_CUPBOARD: 'initial',
+        CLOSE_CUPBOARD: {
+          target: 'initial',
+          actions: 'clearPickedUp',
+        },
         REMOVE_ITEM_FROM_MAP: {
           target: '.',
           actions: 'removeItemFromMap',
@@ -119,7 +122,7 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
         ADD_ITEM_TO_MAP: {
           target: '.',
           actions: 'addItemToMap',
-        }
+        },
       },
     },
     moving: {
@@ -162,6 +165,7 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
       const { position } = context;
       context.pickedUp = items[Math.floor(context.level.objects[position[1]][position[0]])];
     }),
+    clearPickedUp: assign((context) => context.pickedUp = null),
     removeItemFromMap: assign((context) => {
       const { position } = context;
 
