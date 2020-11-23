@@ -62,6 +62,7 @@ const Character: FC<IProps> = ({
         break;
       case ' ':
         send({ type: 'CHECK_PICKUP_ITEM' });
+        send({ type: 'OPEN_WINDOW', window: 'cupboard' })
         break;
     }
   }, [send, speed]);

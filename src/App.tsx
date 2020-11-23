@@ -16,8 +16,8 @@ import { Game } from './@core/Game';
 import Map from './@core/Map';
 import Character from './Character';
 import { Cupboard } from './cupboard/Cupboard';
-import { IItem } from './cupboard/cupboard.machine';
 import { gameMachine } from './game.machine';
+import { SpellBook } from './spellbook/SpellBook';
 
 inspect({
   url: "https:statecharts.io/inspect",
@@ -84,7 +84,6 @@ function App() {
       level,
     }
   });
-
   const l = useMemo(() => current.context.level, [current.context.level]);
   const translate = useCallback(([x, y]): [number, number] => [x, current.context.level.map.length - y - 1], [current.context.level.map]);
   return <>
@@ -107,11 +106,17 @@ function App() {
     </Game>
 
     {
-      current.matches('cupboard') && current.context.cupboard &&
-      <Cupboard actor={current.context.cupboard} />
+      current.context.windows.cupboard.open && current.context.windows.cupboard.actor &&
+      <Cupboard actor={current.context.windows.cupboard.actor} />
     }
 
-    <button onClick={() => send('OPEN_CUPBOARD')}>Cupboard</button>
+    {
+      current.context.windows.spellBook.open && current.context.windows.spellBook.actor &&
+      <SpellBook actor={current.context.windows.spellBook.actor} />
+    }
+
+    <button onClick={() => send({ type: 'OPEN_WINDOW', window: 'cupboard' })}>Cupboard</button>
+    <button onClick={() => send({ type: 'OPEN_WINDOW', window: 'spellBook' })}>Spell book</button>
   </>
 }
 

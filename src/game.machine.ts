@@ -1,6 +1,7 @@
 import {
   Actor,
   Machine,
+  send,
   spawn,
   State,
 } from 'xstate';
@@ -16,18 +17,19 @@ import {
   IItem,
 } from './cupboard/cupboard.machine';
 import { items } from './items';
+import { spellBookMachine } from './spellbook/spellbook.machine';
 
 export type GameActions = { type: 'MOVE_DOWN'; speed: number }
   | { type: 'MOVE_UP'; speed: number }
   | { type: 'MOVE_RIGHT'; speed: number }
   | { type: 'MOVE_LEFT'; speed: number }
   | { type: 'MOVE_CHARACTER_TO', position: [number, number] }
-  | { type: 'OPEN_CUPBOARD' }
-  | { type: 'CLOSE_CUPBOARD' }
   | { type: 'CHECK_PICKUP_ITEM' }
   | { type: 'REMOVE_ITEM_FROM_MAP' }
-  | { type: 'ADD_ITEM_TO_MAP', item: IItem };
-;
+  | { type: 'ADD_ITEM_TO_MAP', item: IItem }
+  | { type: 'OPEN_WINDOW', window: keyof GameContext['windows'] }
+  | { type: 'CLOSE_WINDOW', window: keyof GameContext['windows'] }
+  ;
 
 export interface ILevel {
   map: number[][];
@@ -38,8 +40,16 @@ export interface ILevel {
 }
 
 export interface GameContext {
-  cupboard: Actor<State<any, any>, any> | null;
-  pickedUp: IItem | null;
+  windows: {
+    spellBook: {
+      open: boolean;
+      actor: Actor<State<any, any>, any> | null;
+    };
+    cupboard: {
+      open: boolean;
+      actor: Actor<State<any, any>, any> | null;
+    };
+  };
   position: [number, number];
   level: ILevel;
   path: IGraphStep[];
@@ -49,7 +59,6 @@ export interface GameContext {
 interface GameSchema {
   states: {
     initial: {};
-    cupboard: {},
     moving: {},
   };
 };
@@ -64,9 +73,19 @@ interface IGraphStep {
 export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   id: 'gameMachine',
   initial: 'initial',
+  entry: assign((context) => {
+    if (!context.windows.spellBook.actor) {
+      context.windows.spellBook.actor = spawn(spellBookMachine, 'spellBookMachine');
+    }
+    if (!context.windows.cupboard.actor) {
+      context.windows.cupboard.actor = spawn(cupboardMachine, 'cupboardMachine');
+    }
+  }),
   context: {
-    cupboard: null,
-    pickedUp: null,
+    windows: {
+      cupboard: { open: false, actor: null },
+      spellBook: { open: false, actor: null },
+    },
     position: [0, 0],
     path: [],
     level: {
@@ -79,41 +98,23 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
   states: {
     initial: {
       on: {
-        OPEN_CUPBOARD: 'cupboard',
         CHECK_PICKUP_ITEM: [{
-          target: 'cupboard',
+          target: '.',
           cond: 'tileHasItem',
-          actions: 'pickupItem',
+          actions: 'pickUpItem',
         }, {
-          target: 'cupboard',
+          target: '.',
         }
         ],
         MOVE_CHARACTER_TO: {
           actions: 'makePath',
           target: 'moving',
         },
-      },
-    },
-    cupboard: {
-      // invoke: {
-      //   src: cupboardMachine,
-      //   id: 'cupboardMachine',
-      //   onDone: 'initial',
-      //   data: {
-      //     item: (context: GameContext) => context.pickedUp,
-      //   },
-      // },
-      entry: assign((context) => {
-        if (!context.cupboard) {
-          context.cupboard = spawn(cupboardMachine, 'cupboardMachine');
-        }
-        context.cupboard.send({ type: 'OPEN' });
-        context.cupboard.send({ type: 'SET_ITEM', item: JSON.parse(JSON.stringify(context.pickedUp)) });
-      }),
-      on: {
-        CLOSE_CUPBOARD: {
-          target: 'initial',
-          actions: 'clearPickedUp',
+        OPEN_WINDOW: {
+          actions: 'openWindow',
+        },
+        CLOSE_WINDOW: {
+          actions: 'closeWindow',
         },
         REMOVE_ITEM_FROM_MAP: {
           target: '.',
@@ -153,6 +154,13 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
     }
   },
   actions: {
+    openWindow: assign((context, event: any) => context.windows[event.window as keyof GameContext['windows']].open = true),
+    closeWindow: assign((context, event: any) => context.windows[event.window as keyof GameContext['windows']].open = false),
+    pickUpItem: send((context) => {
+      const { position } = context;
+      const pickedUp = items[Math.floor(context.level.objects[position[1]][position[0]])];
+      return { type: 'SET_ITEM', item: pickedUp };
+    }, { to: 'cupboardMachine' }),
     makePath: assign((context, event: any) => {
       const graph = new Graph(context.level.walls, { diagonal: true })
       const start = graph.grid[context.position[1]][context.position[0]];
@@ -161,11 +169,6 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
 
       context.path = result;
     }),
-    pickupItem: assign((context) => {
-      const { position } = context;
-      context.pickedUp = items[Math.floor(context.level.objects[position[1]][position[0]])];
-    }),
-    clearPickedUp: assign((context) => context.pickedUp = null),
     removeItemFromMap: assign((context) => {
       const { position } = context;
 
@@ -173,7 +176,6 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
     }),
     addItemToMap: assign((context, event: any) => {
       const { position } = context;
-      console.log('addItemToMap, event =', event);
       context.level.objects[position[1]][position[0]] = event.item.id;
     }),
     popPath: assign((context) => {
