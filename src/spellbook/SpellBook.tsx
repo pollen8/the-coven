@@ -1,5 +1,4 @@
-import React, { FC } from 'react';
-import Modal from 'react-modal';
+import { FC } from 'react';
 import {
   Actor,
   State,
@@ -13,32 +12,24 @@ import {
   SpellBookEvent,
 } from './spellbook.machine';
 
-Modal.setAppElement('#root')
-
 interface IProps {
   actor: Actor<State<SpellBookContext, SpellBookEvent>, any>;
 }
+
 export const SpellBook: FC<IProps> = ({
   actor,
 }) => {
+  console.log('render spell book');
   const [state, send] = useActor(actor);
 
   const { books } = state.context as SpellBookContext;
   useEscapeClose(send);
 
-  return (<Modal
-    isOpen={!state.matches('closed')}
-
-    contentLabel="Spell book"
-  >
+  return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flexGrow: 1 }}>
-
+        <h1>SPELL BOOK</h1>
       </div>
-      <footer style={{ textAlign: 'center' }}>
-        <button
-          onClick={() => send({ type: 'CLOSE' })}>Close</button>
-      </footer>
     </div>
-  </Modal>)
+  )
 }

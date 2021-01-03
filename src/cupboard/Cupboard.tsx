@@ -1,5 +1,4 @@
 import React, { FC } from 'react';
-import Modal from 'react-modal';
 import {
   Actor,
   State,
@@ -14,8 +13,6 @@ import {
 } from './cupboard.machine';
 import { PickedUpItem } from './PickedUpItem';
 
-Modal.setAppElement('#root')
-
 interface IProps {
   actor: Actor<State<CupboardContext, CupboardEvent>, any>;
 }
@@ -27,11 +24,7 @@ export const Cupboard: FC<IProps> = ({
   const { item, cupboard } = state.context as CupboardContext;
   useEscapeClose(send);
 
-  return (<Modal
-    isOpen={!state.matches('closed')}
-
-    contentLabel="Cupboard"
-  >
+  return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flexGrow: 1 }}>
         <h2>Cupboard</h2>
@@ -60,10 +53,7 @@ export const Cupboard: FC<IProps> = ({
           </div>
         </div>
       </div>
-      <footer style={{ textAlign: 'center' }}>
-        <button
-          onClick={() => send({ type: 'CLOSE' })}>Close</button>
-      </footer>
+
     </div>
-  </Modal>)
+  )
 }

@@ -18,6 +18,7 @@ import Character from './Character';
 import { Cupboard } from './cupboard/Cupboard';
 import { gameMachine } from './game.machine';
 import { SpellBook } from './spellbook/SpellBook';
+import { Window } from './ui/Window';
 
 inspect({
   url: "https:statecharts.io/inspect",
@@ -106,13 +107,21 @@ function App() {
     </Game>
 
     {
-      current.context.windows.cupboard.open && current.context.windows.cupboard.actor &&
-      <Cupboard actor={current.context.windows.cupboard.actor} />
+      current.context.windows.cupboard.actor &&
+      <Window
+        isOpen={current.context.windows.cupboard.open}
+        onClose={() => send({ type: 'CLOSE_WINDOW', window: 'cupboard' })}>
+        <Cupboard actor={current.context.windows.cupboard.actor} />
+      </Window>
     }
 
     {
-      current.context.windows.spellBook.open && current.context.windows.spellBook.actor &&
-      <SpellBook actor={current.context.windows.spellBook.actor} />
+      current.context.windows.spellBook.actor &&
+      <Window
+        isOpen={current.context.windows.spellBook.open}
+        onClose={() => send({ type: 'CLOSE_WINDOW', window: 'spellBook' })}>
+        <SpellBook actor={current.context.windows.spellBook.actor} />
+      </Window>
     }
 
     <button onClick={() => send({ type: 'OPEN_WINDOW', window: 'cupboard' })}>Cupboard</button>

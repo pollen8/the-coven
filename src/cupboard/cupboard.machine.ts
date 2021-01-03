@@ -33,8 +33,6 @@ interface CupboardSchema {
 export type CupboardEvent = { type: 'ADD_ITEM', item: IItem }
   | { type: 'REMOVE_ITEM', item: IItem }
   | { type: 'SET_ITEM', item: IItem }
-  | { type: 'CLOSE' }
-  | { type: 'OPEN' }
 
 export const cupboardMachine = Machine<CupboardContext, CupboardSchema, CupboardEvent>({
   id: 'cupboard',
@@ -49,9 +47,6 @@ export const cupboardMachine = Machine<CupboardContext, CupboardSchema, Cupboard
   states: {
     open: {
       on: {
-        CLOSE: {
-          actions: ['clearItem', sendParent({ type: 'CLOSE_WINDOW', window: 'cupboard' })]
-        },
         ADD_ITEM: [{
           target: '.',
           actions: ['addItem', 'clearItem', sendParent('REMOVE_ITEM_FROM_MAP')],
@@ -77,9 +72,6 @@ export const cupboardMachine = Machine<CupboardContext, CupboardSchema, Cupboard
       }
     },
     warnFull: {
-      on: {
-        CLOSE: 'open',
-      }
     }
 
   }

@@ -165,6 +165,9 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
       const graph = new Graph(context.level.walls, { diagonal: true })
       const start = graph.grid[context.position[1]][context.position[0]];
       const end = graph.grid[event.position[1]][event.position[0]];
+      if (!end) {
+        return;
+      }
       var result = astar.search(graph, start, end, { closest: true });
 
       context.path = result;

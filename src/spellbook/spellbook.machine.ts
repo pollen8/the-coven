@@ -1,9 +1,4 @@
-import {
-  Machine,
-  sendParent,
-} from 'xstate';
-
-import { assign } from '@xstate/immer';
+import { Machine } from 'xstate';
 
 import { IItem } from '../cupboard/cupboard.machine';
 
@@ -31,8 +26,6 @@ interface SpellBookSchema {
 export type SpellBookEvent = { type: 'ADD_BOOK', book: ISpellBook }
   | { type: 'ADD_SPELL', spell: ISpell, book: string }
   | { type: 'SELECT_SPELL', spell: ISpell }
-  | { type: 'CLOSE' }
-  | { type: 'OPEN' }
 
 export const spellBookMachine = Machine<SpellBookContext, SpellBookSchema, SpellBookEvent>({
   id: 'spellBook',
@@ -44,9 +37,6 @@ export const spellBookMachine = Machine<SpellBookContext, SpellBookSchema, Spell
   states: {
     open: {
       on: {
-        CLOSE: {
-          actions: sendParent({ type: 'CLOSE_WINDOW', window: 'spellBook' }),
-        },
         ADD_BOOK: {
 
         },
