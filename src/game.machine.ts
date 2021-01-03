@@ -49,6 +49,10 @@ export interface GameContext {
       open: boolean;
       actor: Actor<State<any, any>, any> | null;
     };
+    cauldron: {
+      open: boolean;
+      actor: Actor<State<any, any>, any> | null;
+    };
   };
   position: [number, number];
   level: ILevel;
@@ -85,6 +89,7 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
     windows: {
       cupboard: { open: false, actor: null },
       spellBook: { open: false, actor: null },
+      cauldron: { open: false, actor: null },
     },
     position: [0, 0],
     path: [],

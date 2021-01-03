@@ -2,7 +2,7 @@ import { Machine } from 'xstate';
 
 import { IItem } from '../cupboard/cupboard.machine';
 
-interface ISpell {
+export interface ISpell {
   ingredients: IItem[];
 }
 

@@ -14,6 +14,7 @@ import { useMachine } from '@xstate/react';
 import Dolly from './@core/Dolly';
 import { Game } from './@core/Game';
 import Map from './@core/Map';
+import { Cauldron } from './cauldron/Cauldron';
 import Character from './Character';
 import { Cupboard } from './cupboard/Cupboard';
 import { gameMachine } from './game.machine';
@@ -124,8 +125,18 @@ function App() {
       </Window>
     }
 
+    {
+      current.context.windows.cauldron.actor &&
+      <Window
+        isOpen={current.context.windows.cauldron.open}
+        onClose={() => send({ type: 'CLOSE_WINDOW', window: 'cauldron' })}>
+        <Cauldron actor={current.context.windows.cauldron.actor} />
+      </Window>
+    }
+
     <button onClick={() => send({ type: 'OPEN_WINDOW', window: 'cupboard' })}>Cupboard</button>
     <button onClick={() => send({ type: 'OPEN_WINDOW', window: 'spellBook' })}>Spell book</button>
+    <button onClick={() => send({ type: 'OPEN_WINDOW', window: 'cauldron' })}>Cauldron</button>
   </>
 }
 

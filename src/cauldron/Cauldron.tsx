@@ -7,15 +7,15 @@ import {
 import { useActor } from '@xstate/react';
 
 import {
-  SpellBookContext,
-  SpellBookEvent,
-} from './spellbook.machine';
+  CauldronContext,
+  CauldronEvent,
+} from './cauldron.machine';
 
 interface IProps {
-  actor: Actor<State<SpellBookContext, SpellBookEvent>, any>;
+  actor: Actor<State<CauldronContext, CauldronEvent>, any>;
 }
 
-export const SpellBook: FC<IProps> = ({
+export const Cauldron: FC<IProps> = ({
   actor,
 }) => {
   console.log('render spell book');
@@ -26,7 +26,7 @@ export const SpellBook: FC<IProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flexGrow: 1 }}>
-        <h1>SPELL BOOK</h1>
+        <h1>Cauldron</h1>
       </div>
     </div>
   )

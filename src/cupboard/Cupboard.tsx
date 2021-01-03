@@ -6,7 +6,6 @@ import {
 
 import { useActor } from '@xstate/react';
 
-import { useEscapeClose } from '../useEscapeClose';
 import {
   CupboardContext,
   CupboardEvent,
@@ -22,7 +21,6 @@ export const Cupboard: FC<IProps> = ({
   const [state, send] = useActor(actor);
 
   const { item, cupboard } = state.context as CupboardContext;
-  useEscapeClose(send);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
