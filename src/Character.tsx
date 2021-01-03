@@ -31,7 +31,7 @@ interface IProps {
 }
 
 const Character: FC<IProps> = ({
-  spriteImage = './chars/gabe/gabe-idle-run.png',
+  spriteImage = './chars/witch/witch1.png',
   spriteRows = 1,
   spriteColumns = 7,
   framesPerSecond = 10,

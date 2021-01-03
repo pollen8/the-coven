@@ -12,6 +12,7 @@ import {
   astar,
   Graph,
 } from './@core/astar';
+import { cauldronMachine } from './cauldron/cauldron.machine';
 import {
   cupboardMachine,
   IItem,
@@ -83,6 +84,9 @@ export const gameMachine = Machine<GameContext, GameSchema, GameActions>({
     }
     if (!context.windows.cupboard.actor) {
       context.windows.cupboard.actor = spawn(cupboardMachine, 'cupboardMachine');
+    }
+    if (!context.windows.cauldron.actor) {
+      context.windows.cauldron.actor = spawn(cauldronMachine, 'cauldronMachine');
     }
   }),
   context: {

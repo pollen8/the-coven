@@ -21,8 +21,6 @@ export const Cauldron: FC<IProps> = ({
   console.log('render spell book');
   const [state, send] = useActor(actor);
 
-  const { books } = state.context as SpellBookContext;
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flexGrow: 1 }}>

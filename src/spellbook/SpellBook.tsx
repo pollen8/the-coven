@@ -22,7 +22,7 @@ export const SpellBook: FC<IProps> = ({
   const [state, send] = useActor(actor);
 
   const { books } = state.context as SpellBookContext;
-
+  console.log('books', books);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flexGrow: 1 }}>
