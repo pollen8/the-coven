@@ -1,18 +1,18 @@
-import React, {
-  FC,
+import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
 } from 'react';
-import { useFrame } from 'react-three-fiber';
-import { PlainAnimator } from 'three-plain-animator/lib/plain-animator';
 
 import { useTexture } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
 
-import GameObject from './@core/GameObject';
-import { GameActions } from './game.machine';
+import { GameObject } from './@core/GameObject';
+import { PlainAnimator } from './@core/plain-animator';
+import { GameContext } from './App';
 
-interface IProps {
+type Props = {
   /** Path name to the texture containing the character's sprite canvas */
   spriteImage?: string;
   /** Number of rows in the sprite canvas */
@@ -23,46 +23,47 @@ interface IProps {
   framesPerSecond?: number;
   /** Character's speed */
   speed?: number;
-  /** Send events to the Game Machine */
-  send: (action: GameActions) => void;
-  statePosition: [number, number];
-  translatePosition: ([x, y]: [number, number]) => [number, number];
-  isMoving: boolean;
-}
+  // TranslatePosition: ([x, y]: [number, number]) => [number, number];
+};
 
-const Character: FC<IProps> = ({
+export const Character = ({
   spriteImage = './chars/witch/witch1.png',
   spriteRows = 1,
   spriteColumns = 7,
   framesPerSecond = 10,
   speed = 1,
-  send,
-  statePosition,
-  translatePosition,
-  isMoving,
-}) => {
-
+}: Props) => {
+  const { send } = GameContext.useActorRef();
+  const statePosition = GameContext.useSelector(({ context }) => context.position);
+  const isMoving = GameContext.useSelector(state => state.matches('moving') || state.matches('stepping'));
   const [position, setPosition] = useState<[number, number]>([0, 0]);
 
-
+  // TODO - we can simplify this down to just call MOVE_CHARACTER_TO instead.
   const watchKeyDown = useMemo(() => (e: KeyboardEvent) => {
-    // TODO - we can simplify this down to just call MOVE_CHARACTER_TO instead.
     switch (e.key) {
       case 'ArrowLeft':
         send({ type: 'MOVE_LEFT', speed });
+        e.preventDefault(); // Avoid scrolling the browser window
         break;
       case 'ArrowRight':
         send({ type: 'MOVE_RIGHT', speed });
+        e.preventDefault();
         break;
       case 'ArrowUp':
         send({ type: 'MOVE_UP', speed });
+        e.preventDefault();
         break;
       case 'ArrowDown':
         send({ type: 'MOVE_DOWN', speed });
+        e.preventDefault();
         break;
       case ' ':
         send({ type: 'CHECK_PICKUP_ITEM' });
-        send({ type: 'OPEN_WINDOW', window: 'cupboard' })
+        send({ type: 'OPEN_WINDOW', window: 'cupboard' });
+        e.preventDefault();
+
+        break;
+      default:
         break;
     }
   }, [send, speed]);
@@ -71,33 +72,45 @@ const Character: FC<IProps> = ({
     document.addEventListener('keydown', watchKeyDown);
     return () => {
       document.removeEventListener('keydown', watchKeyDown);
-    }
+    };
   }, [watchKeyDown]);
 
-  const texture = useTexture(spriteImage) as any;
-  const animator = useMemo(() => new PlainAnimator(texture, spriteColumns, spriteRows, isMoving ? spriteColumns * spriteRows : 1, framesPerSecond), [framesPerSecond, isMoving, spriteColumns, spriteRows, texture])
+  const texture = useTexture(spriteImage);
+  const animator = useMemo(
+    () => new PlainAnimator(texture, spriteColumns, spriteRows, isMoving ? spriteColumns * spriteRows : 1, framesPerSecond)
+    , [framesPerSecond, spriteColumns, spriteRows, texture, isMoving]
+  );
+
+  const l = GameContext.useSelector(({ context }) => context.level);
+
+  const translate = useCallback(([x, y]: [number, number]): [number, number] => [x, l.map.length - y - 1], [l.map]);
 
   // Animate the character run
   useFrame(() => {
     animator.animate();
+
     const p: [number, number] = statePosition ? statePosition : [0, 0];
-    const newP = translatePosition(p);
+    const newP = translate(p);
     if (newP[0] !== position[0] || newP[1] !== position[1]) {
       setPosition(newP);
     }
   });
+
   return (
     <GameObject>
       <mesh
-        position={[...position, 2]}>
-        <boxBufferGeometry attach="geometry" args={[1, 1, 0.1]} />
+        position={[...position, 2]}
+      >
+        <boxGeometry
+          attach="geometry"
+          args={[1, 1, 0.1]}
+        />
         <meshStandardMaterial
           attach="material"
           map={texture}
-          transparent={true} />
+          transparent
+        />
       </mesh>
     </GameObject>
-  )
-}
-
-export default Character;
+  );
+};

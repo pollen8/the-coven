@@ -20,4 +20,4 @@ export const items: IItem[] = [
     img: './props/generic-rpg-loot05.png',
     description: 'These potent cherries tend to make your spells explode!',
   }
-]
+];

@@ -1,26 +1,21 @@
-import { Machine } from 'xstate';
+import { createMachine } from 'xstate';
 
 import { IItem } from '../cupboard/cupboard.machine';
-import { ISpell } from '../spellbook/spellbook.machine';
+import { Spell } from '../spellbook/spellbook.machine';
 
-export interface CauldronContext {
-  ingredients: IItem[];
-  selected: ISpell | null;
-}
-
-interface CauldronSchema {
-  states: {
-    initial: {};
-  };
-}
-
-export type CauldronEvent = { type: 'ADD_INGREDIENT' }
-  | { type: 'SET_SPELL', spell: ISpell | null }
-  | { type: 'RESET', }
-  | { type: 'MAKE' }
-
-export const cauldronMachine = Machine<CauldronContext, CauldronSchema, CauldronEvent>({
+export const cauldronMachine = createMachine({
   id: 'cauldron',
+  tsTypes: {} as import('./cauldron.machine.typegen').Typegen0,
+  schema: {
+    context: {} as {
+      ingredients: IItem[];
+      selected: Spell | null;
+    },
+    events: {} as { type: 'ADD_INGREDIENT' }
+    | { type: 'SET_SPELL', spell: Spell | null }
+    | { type: 'RESET', }
+    | { type: 'MAKE' }
+  },
   initial: 'initial',
   context: {
     ingredients: [],

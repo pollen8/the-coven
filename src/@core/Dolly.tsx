@@ -1,10 +1,8 @@
-import React, {
-  FC,
-  useState,
-} from 'react';
+import { useState } from 'react';
 import { useSpring } from 'react-spring';
-import { useFrame } from 'react-three-fiber';
 import { OrthographicCamera } from 'three';
+
+import { useFrame } from '@react-three/fiber';
 
 interface IProps {
   center: [number, number];
@@ -16,9 +14,9 @@ interface IProps {
 
 // Check out https://github.com/mbritton/britton-www/blob/development/src/App.js
 
-const Dolly: FC<IProps> = ({
+const Dolly = ({
   center,
-}) => {
+}: IProps) => {
   const [lastCenter, setLastCenter] = useState<[number, number]>(center);
   const [isMoving, setIsMoving] = useState(false);
   const [tmp, setTmp] = useState<[number, number]>(lastCenter);
@@ -27,7 +25,7 @@ const Dolly: FC<IProps> = ({
     to: { x: center[0], y: center[1] },
     onChange: (props: any) => console.log('frame', props),
     onRest: () => setLastCenter(center)
-  })
+  });
 
   // This one makes the camera move to the right
   useFrame(({ clock, camera }) => {
@@ -36,7 +34,7 @@ const Dolly: FC<IProps> = ({
     // console.log('tmp', tmp)
     c.position.setX(tmp[0]);
     c.position.setY(tmp[1]);
-    camera.updateProjectionMatrix()
+    camera.updateProjectionMatrix();
 
     // if (clock.elapsedTime > 2) {
     //   setIsMoving(true);
@@ -53,9 +51,9 @@ const Dolly: FC<IProps> = ({
     //   //   console.log(c.left);
     //   //   i++
     // }
-  })
+  });
 
-  return null
-}
+  return null;
+};
 
 export default Dolly;

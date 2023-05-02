@@ -1,38 +1,34 @@
-import { Machine } from 'xstate';
+import { createMachine } from 'xstate';
 
 import { IItem } from '../cupboard/cupboard.machine';
 
-export interface ISpell {
+export type Spell = {
   ingredients: IItem[];
-}
+};
 
-export interface ISpellBook {
+export type SpellBook = {
   name: string;
-  spells: ISpell[];
+  spells: Spell[];
   capacity: number;
-}
+};
 
-export interface SpellBookContext {
-  books: ISpellBook[];
-  selected: ISpell | null;
-}
+export const spellBookMachine = createMachine({
+  tsTypes: {} as import('./spellbook.machine.typegen').Typegen0,
+  schema: {
+    context: {} as {
+      books: SpellBook[];
+      selected: Spell | undefined;
+    },
+    events: {} as { type: 'ADD_BOOK'; book: SpellBook }
+    | { type: 'ADD_SPELL'; spell: Spell; book: string }
+    | { type: 'SELECT_SPELL'; spell: Spell },
 
-interface SpellBookSchema {
-  states: {
-    open: {};
-  };
-}
-
-export type SpellBookEvent = { type: 'ADD_BOOK', book: ISpellBook }
-  | { type: 'ADD_SPELL', spell: ISpell, book: string }
-  | { type: 'SELECT_SPELL', spell: ISpell }
-
-export const spellBookMachine = Machine<SpellBookContext, SpellBookSchema, SpellBookEvent>({
+  },
   id: 'spellBook',
   initial: 'open',
   context: {
     books: [],
-    selected: null,
+    selected: undefined,
   },
   states: {
     open: {
@@ -45,14 +41,14 @@ export const spellBookMachine = Machine<SpellBookContext, SpellBookSchema, Spell
         },
         SELECT_SPELL: {
           target: '.',
-        }
-      }
+        },
+      },
     },
-  }
+  },
 }, {
   actions: {
   },
   guards: {
-  }
+  },
 });
 

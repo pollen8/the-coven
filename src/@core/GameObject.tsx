@@ -1,11 +1,11 @@
-import React, { FC } from 'react';
+import { PropsWithChildren } from 'react';
 
-const GameObject: FC = ({ children }) => {
+export const GameObject = ({
+  children,
+}: PropsWithChildren<unknown>) => {
   return (
     <>
       {children}
     </>
   );
-}
-
-export default GameObject;
+};

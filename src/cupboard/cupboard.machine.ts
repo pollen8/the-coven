@@ -1,5 +1,5 @@
 import {
-  Machine,
+  createMachine,
   sendParent,
 } from 'xstate';
 
@@ -18,23 +18,17 @@ export interface ICupboard {
   capacity: number;
 }
 
-export interface CupboardContext {
-  cupboard: ICupboard;
-  item: IItem | null;
-}
-
-interface CupboardSchema {
-  states: {
-    open: {};
-    warnFull: {};
-  };
-}
-
-export type CupboardEvent = { type: 'ADD_ITEM', item: IItem }
-  | { type: 'REMOVE_ITEM', item: IItem }
-  | { type: 'SET_ITEM', item: IItem }
-
-export const cupboardMachine = Machine<CupboardContext, CupboardSchema, CupboardEvent>({
+export const cupboardMachine = createMachine({
+  tsTypes: {} as import('./cupboard.machine.typegen').Typegen0,
+  schema: {
+    context: {} as {
+      cupboard: ICupboard;
+      item: IItem | null;
+    },
+    events: {} as { type: 'ADD_ITEM', item: IItem }
+    | { type: 'REMOVE_ITEM', item: IItem }
+    | { type: 'SET_ITEM', item: IItem }
+  },
   id: 'cupboard',
   initial: 'open',
   context: {

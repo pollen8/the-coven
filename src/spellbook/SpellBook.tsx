@@ -1,27 +1,12 @@
-import { FC } from 'react';
-import {
-  Actor,
-  State,
-} from 'xstate';
+import { useMachine } from '@xstate/react';
 
-import { useActor } from '@xstate/react';
+import { spellBookMachine } from './spellbook.machine';
 
-import {
-  SpellBookContext,
-  SpellBookEvent,
-} from './spellbook.machine';
-
-interface IProps {
-  actor: Actor<State<SpellBookContext, SpellBookEvent>, any>;
-}
-
-export const SpellBook: FC<IProps> = ({
-  actor,
-}) => {
+export const SpellBook = () => {
   console.log('render spell book');
-  const [state, send] = useActor(actor);
 
-  const { books } = state.context as SpellBookContext;
+  const [state] = useMachine(spellBookMachine);
+  const books = state.context.books;
   console.log('books', books);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -29,5 +14,5 @@ export const SpellBook: FC<IProps> = ({
         <h1>SPELL BOOK</h1>
       </div>
     </div>
-  )
-}
+  );
+};

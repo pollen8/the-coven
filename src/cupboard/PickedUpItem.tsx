@@ -1,16 +1,14 @@
-import React, { FC } from 'react';
-
 import { IItem } from './cupboard.machine';
 
-interface IProps {
+type Props = {
   item: IItem | null;
   send: (action: any) => void;
 }
 
-export const PickedUpItem: FC<IProps> = ({
+export const PickedUpItem = ({
   item,
   send,
-}) => {
+}: Props) => {
   if (!item) {
     return null;
   }
@@ -19,7 +17,13 @@ export const PickedUpItem: FC<IProps> = ({
       <div>New item</div>
       <h4>
         {
-          item.img && <img src={item.img} alt={item.title} style={{ width: '32px', height: '32px' }} />
+          item.img && (
+            <img
+              src={item.img}
+              alt={item.title}
+              style={{ width: '32px', height: '32px' }}
+            />
+          )
         }
         {item.title}
       </h4>
@@ -30,5 +34,5 @@ export const PickedUpItem: FC<IProps> = ({
       </p>
       <button onClick={() => send({ type: 'ADD_ITEM', item })}>Add</button>
     </div>
-  )
-}
+  );
+};

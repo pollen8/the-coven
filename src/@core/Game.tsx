@@ -1,13 +1,15 @@
-import React, { FC } from 'react';
-import { Canvas } from 'react-three-fiber';
+import { PropsWithChildren } from 'react';
 
-interface IProps {
+import { Canvas } from '@react-three/fiber';
+
+type Props = {
   cameraZoom: number;
 }
-export const Game: FC<IProps> = ({
+
+export const Game = ({
   cameraZoom,
   children,
-}) => {
+}: PropsWithChildren<Props>) => {
   return (
     <Canvas
       camera={{
@@ -18,12 +20,11 @@ export const Game: FC<IProps> = ({
       }}
       orthographic
       // gl2
-      // @ts-ignore
       gl={{ antialias: false }}
       onContextMenu={e => e.preventDefault()}
     >
       {children}
     </Canvas>
-  )
-}
+  );
+};
 
