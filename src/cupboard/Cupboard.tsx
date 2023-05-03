@@ -1,25 +1,26 @@
+import {
+  ActorRef,
+  StateFrom,
+} from 'xstate';
+
+import { useActor } from '@xstate/react';
+
 import { GameContext } from '../App';
+import { cupboardMachine } from './cupboard.machine';
 import { PickedUpItem } from './PickedUpItem';
 
 export const Cupboard = () => {
-  const actor = GameContext.useSelector(({ context }) => context.windows.cupboard.actor);
-  if (!actor) {
-    return null;
-  }
-  const { send } = actor;
-  const context = actor.getSnapshot()?.context;
-  const matches = actor.getSnapshot()?.matches;
-  if (!context || !matches) {
-    return null;
-  }
-  const { item, cupboard } = context;
+  const game = GameContext.useActor();
+  const [state, send] = useActor<ActorRef<any, StateFrom<typeof cupboardMachine>>>(game[0].children.cupboardMachine);
+
+  const { item, cupboard } = state.context;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flexGrow: 1 }}>
         <h2>Cupboard</h2>
         {
-          matches('warnFull') && <div role="alert">No more room</div>
+          state.matches('warnFull') && <div role="alert">No more room</div>
         }
         <div style={{ display: 'flex' }}>
           <div style={{ width: '10rem' }}>

@@ -9,7 +9,7 @@ import { createActorContext } from '@xstate/react';
 
 import Dolly from './@core/Dolly';
 import { Game } from './@core/Game';
-import Map from './@core/Map';
+import { Map } from './@core/Map';
 import { Cauldron } from './cauldron/Cauldron';
 import { Character } from './Character';
 import { Cupboard } from './cupboard/Cupboard';
@@ -50,13 +50,14 @@ function App() {
 function AppInside() {
   const { send } = GameContext.useActorRef();
   const l = GameContext.useSelector(({ context }) => context.level);
+  const center = GameContext.useSelector(({ context }) => context.position);
 
   return <>
     <Game cameraZoom={50}>
       <ambientLight />
       <pointLight position={[10, 10, 10]} />
       <Suspense fallback={<Loader />}>
-        {/* <Dolly center={current.context.position} /> */}
+        <Dolly center={center}/>
         <Map
           level={l}
           onClick={(p) => {
@@ -69,6 +70,7 @@ function AppInside() {
       </Suspense>
     </Game>
     <div style={{ position: 'absolute', bottom: 0 }}>
+      {/* todo: move into drei html */}
       <SpellWindow />
       <CauldronWindow />
       <CupboardWindow />

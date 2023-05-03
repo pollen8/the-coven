@@ -14,7 +14,7 @@ Growing up, try as you might you just can't fold paper and find your life incomp
 sadness you mother finally admits you might be more suited to witch craft and decides to send you to the 
 Coven to be accepted as an apprentice.
 
-After a short but adventurous journey you arrive at the Coven only to find it in deserted bar an old forgetful cat called Dave.
+After a short but adventurous journey, through lands that reek with poison and rot, you arrive at the Coven only to find it in deserted bar an old forgetful cat called Dave.
 Accompanied by the cat you are drawn to a pulsating compass enscribed with the words "seek what was lost". Upon picking it
 up the needle swings firmly towards the north and the dial rotates to align the needle with the symbol hat.
 
@@ -32,7 +32,7 @@ So you and Dave set out on your adventure.....
 * Improved land produces more types of ingredients
 * Use ingredients to make spells
 * battle rival covens
-* rewild animals - gives + mannalac
+* rewild animals - gives + manna
 * 
 
 

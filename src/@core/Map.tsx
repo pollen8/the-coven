@@ -41,7 +41,6 @@ const Tile = ({
       >
         <meshBasicMaterial
           transparent
-          alphaTest={0.6}
           map={texture}
         />
       </mesh>
@@ -55,7 +54,8 @@ interface IProps {
   level: ILevel;
   onClick?: (position: [number, number]) => void;
 }
-const Map = ({
+
+export const Map = ({
   level,
   onClick,
 }: IProps) => {
@@ -66,13 +66,15 @@ const Map = ({
     <>
       {
         level.map.map((row, i) => {
-          return row.map((tile, j) => (
-            <Tile
-              onClick={() => onClick && onClick([j, i])}
-              key={`tile-${i}-${j}`}
-              position={[j, level.map.length - 1 - i, 0]}
-              texture={textures[tile]}
-            />)
+          return row.map((tile, j) => {
+            return (
+              <Tile
+                onClick={() => onClick && onClick([j, i])}
+                key={`tile-${i}-${j}`}
+                position={[j - Math.ceil(row.length / 2), Math.ceil(-1 * (i - level.map.length / 2)), 0]}
+                texture={textures[tile]}
+              />);
+          }
           );
         })
       }
@@ -81,7 +83,7 @@ const Map = ({
           return row.map((tile, j) => tile === 0 ? null : (
             <Tile
               key={`scenery-${i}-${j}`}
-              position={[j, level.map.length - 1 - i, 0]}
+              position={[j - Math.ceil(level.map[0].length / 2), Math.ceil(-1 * (i - level.map.length / 2)), 0]}
               texture={scenery[tile - 1]}
             />
           ));
@@ -93,7 +95,7 @@ const Map = ({
             <Tile
               key={`object-${i}-${j}`}
               scale={[0.5, 0.5, 1]}
-              position={[j, level.map.length - 1 - i, 0]}
+              position={[j - Math.ceil(level.map[0].length / 2), Math.ceil(-1 * (i - level.map.length / 2)), 0]}
               texture={objects[tile - 1]}
             />
           ));
@@ -103,4 +105,3 @@ const Map = ({
   );
 };
 
-export default Map;

@@ -176,21 +176,25 @@ export const gameMachine = createMachine({
       return context.path.length === 0;
     },
     tileHasItem(context) {
-      return context.level.objects[context.position[1]][context.position[0]] !== 0;
+      const { x, y } = itemLocation(context.level, context.position);
+      return context.level.objects[y][x] !== 0;
     },
   },
   actions: {
     openWindow: assign((context, event) => context.windows[event.window].open = true),
     closeWindow: assign((context, event) => context.windows[event.window].open = false),
     pickUpItem: sendTo('cupboardMachine', (context: any) => {
-      const { position } = context;
-      const pickedUp = items[Math.floor(context.level.objects[position[1]][position[0]])];
+      const { x, y } = itemLocation(context.level, context.position);
+      const pickedUp = items[Math.floor(context.level.objects[y][x])];
       return { type: 'SET_ITEM', item: pickedUp };
     }),
     makePath: assign((context, event: any) => {
+      debugger;
       const graph = new Graph(context.level.walls, { diagonal: true });
-      const start = graph.grid[context.position[1]][context.position[0]];
+      const { x, y } = charPositionToMapRef(context.level, context.position);
+      const start = graph.grid[y][x];
       const end = graph.grid[event.position[1]][event.position[0]];
+
       if (!end) {
         return;
       }
@@ -200,13 +204,12 @@ export const gameMachine = createMachine({
       context.path = result;
     }),
     removeItemFromMap: assign(context => {
-      const { position } = context;
-
-      context.level.objects[position[1]][position[0]] = 0;
+      const { x, y } = itemLocation(context.level, context.position);
+      context.level.objects[y][x] = 0;
     }),
     addItemToMap: assign((context, event) => {
-      const { position } = context;
-      context.level.objects[position[1]][position[0]] = Number(event.item.id);
+      const { x, y } = itemLocation(context.level, context.position);
+      context.level.objects[y][x] = Number(event.item.id);
     }),
     popPath: assign(context => {
       if (context.path.length === 0) {
@@ -246,3 +249,23 @@ export const gameMachine = createMachine({
 
   },
 });
+
+const itemLocation = (level: ILevel, position: [number, number]) => {
+  const h = level.map.length;
+  const w = level.map[0].length;
+  const y = (position[1] + Math.ceil(h / 2));
+  const x = position[0] + Math.ceil(w / 2);
+  return { x, y };
+};
+
+/**
+ * The camera is centered on 0,0 so tiles above this have a negative number
+ * Take the player coordinates in the tiles and translate to the x,y array values for the map
+ */
+const charPositionToMapRef = (level: ILevel, position: [number, number]) => {
+  const h = level.map.length;
+  const w = level.map[0].length;
+  const x = position[0] + Math.ceil(w / 2);
+  const y = position[1] - Math.ceil(h / 2) + h;
+  return { x, y };
+};

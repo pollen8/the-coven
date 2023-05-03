@@ -81,9 +81,7 @@ export const Character = ({
     , [framesPerSecond, spriteColumns, spriteRows, texture, isMoving]
   );
 
-  const l = GameContext.useSelector(({ context }) => context.level);
-
-  const translate = useCallback(([x, y]: [number, number]): [number, number] => [x, l.map.length - y - 1], [l.map]);
+  const translate = useCallback(([x, y]: [number, number]): [number, number] => [x, y * -1], []);
 
   // Animate the character run
   useFrame(() => {
@@ -95,7 +93,6 @@ export const Character = ({
       setPosition(newP);
     }
   });
-
   return (
     <GameObject>
       <mesh
