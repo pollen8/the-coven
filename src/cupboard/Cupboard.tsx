@@ -13,7 +13,7 @@ export const Cupboard = () => {
   const game = GameContext.useActor();
   const [state, send] = useActor<ActorRef<any, StateFrom<typeof cupboardMachine>>>(game[0].children.cupboardMachine);
 
-  const { item, cupboard } = state.context;
+  const { item, cupboard, position } = state.context;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -25,6 +25,7 @@ export const Cupboard = () => {
         <div style={{ display: 'flex' }}>
           <div style={{ width: '10rem' }}>
             <PickedUpItem
+              position={position}
               item={item}
               send={send}
             />

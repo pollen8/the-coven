@@ -20,6 +20,7 @@
 "clearItem": "ADD_ITEM";
 "removeItem": "REMOVE_ITEM";
 "setItem": "SET_ITEM";
+"setItemPosition": "SET_ITEM";
         };
         eventsCausingDelays: {
           

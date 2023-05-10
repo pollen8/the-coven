@@ -1,11 +1,14 @@
-import { IItem } from './cupboard.machine';
+import { MapPosition } from '../game.machine';
+import { Item } from './cupboard.machine';
 
 type Props = {
-  item: IItem | null;
+  position: MapPosition;
+  item: Item | null;
   send: (action: any) => void;
 }
 
 export const PickedUpItem = ({
+  position,
   item,
   send,
 }: Props) => {
@@ -32,7 +35,7 @@ export const PickedUpItem = ({
           {item.description}
         </small>
       </p>
-      <button onClick={() => send({ type: 'ADD_ITEM', item })}>Add</button>
+      <button onClick={() => send({ type: 'ADD_ITEM', item, position })}>Add</button>
     </div>
   );
 };

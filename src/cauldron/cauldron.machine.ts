@@ -1,6 +1,6 @@
 import { createMachine } from 'xstate';
 
-import { IItem } from '../cupboard/cupboard.machine';
+import { Item } from '../cupboard/cupboard.machine';
 import { Spell } from '../spellbook/spellbook.machine';
 
 export const cauldronMachine = createMachine({
@@ -8,7 +8,7 @@ export const cauldronMachine = createMachine({
   tsTypes: {} as import('./cauldron.machine.typegen').Typegen0,
   schema: {
     context: {} as {
-      ingredients: IItem[];
+      ingredients: Item[];
       selected: Spell | null;
     },
     events: {} as { type: 'ADD_INGREDIENT' }

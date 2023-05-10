@@ -5,7 +5,9 @@ import {
 
 import { assign } from '@xstate/immer';
 
-export interface IItem {
+import { MapPosition } from '../game.machine';
+
+export type Item = {
   id: string;
   title: string;
   description?: string;
@@ -13,8 +15,8 @@ export interface IItem {
   img?: string;
 }
 
-export interface ICupboard {
-  items: IItem[];
+export type Cupboard = {
+  items: Item[];
   capacity: number;
 }
 
@@ -22,12 +24,14 @@ export const cupboardMachine = createMachine({
   tsTypes: {} as import('./cupboard.machine.typegen').Typegen0,
   schema: {
     context: {} as {
-      cupboard: ICupboard;
-      item: IItem | null;
+      cupboard: Cupboard;
+      item: Item | null;
+      position: MapPosition;
     },
-    events: {} as { type: 'ADD_ITEM', item: IItem }
-    | { type: 'REMOVE_ITEM', item: IItem }
-    | { type: 'SET_ITEM', item: IItem }
+    events: {} as { type: 'ADD_ITEM', item: Item; }
+    | { type: 'REMOVE_ITEM', item: Item }
+    | { type: 'SET_ITEM', item: Item; position: MapPosition; }
+    | { type: 'SET_ITEM_POSITION'; position: MapPosition }
   },
   id: 'cupboard',
   initial: 'open',
@@ -36,14 +40,19 @@ export const cupboardMachine = createMachine({
       items: [],
       capacity: 5,
     },
+    position: [0, 0],
     item: null,
   },
   states: {
     open: {
       on: {
+
         ADD_ITEM: [{
           target: '.',
-          actions: ['addItem', 'clearItem', sendParent('REMOVE_ITEM_FROM_MAP')],
+          actions: [
+            'addItem',
+            'clearItem',
+            sendParent((context, event) => ({ type: 'REMOVE_ITEM_FROM_MAP', position: context.position }))],
           cond: 'notFull'
         },
         {
@@ -61,7 +70,7 @@ export const cupboardMachine = createMachine({
         },
         SET_ITEM: {
           target: '.',
-          actions: 'setItem',
+          actions: ['setItem', 'setItemPosition']
         }
       }
     },
@@ -71,13 +80,14 @@ export const cupboardMachine = createMachine({
   }
 }, {
   actions: {
-    setItem: assign((context, event: any) => context.item = event.item),
+    setItemPosition: assign((context, event) => context.position = event.position),
+    setItem: assign((context, event) => context.item = event.item),
     clearItem: assign((context) => context.item = null),
-    addItem: assign((context, event: any) => {
+    addItem: assign((context, event) => {
       context.item = null;
       context.cupboard.items.push(event.item);
     }),
-    removeItem: assign((context, event: any) => {
+    removeItem: assign((context, event) => {
       context.cupboard.items = context.cupboard.items.filter((i) => i.title !== event.item.title);
     }),
   },

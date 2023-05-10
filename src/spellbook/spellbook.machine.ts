@@ -1,9 +1,9 @@
 import { createMachine } from 'xstate';
 
-import { IItem } from '../cupboard/cupboard.machine';
+import { Item } from '../cupboard/cupboard.machine';
 
 export type Spell = {
-  ingredients: IItem[];
+  ingredients: Item[];
 };
 
 export type SpellBook = {

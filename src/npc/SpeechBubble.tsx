@@ -1,4 +1,4 @@
-import { Text } from '@react-three/drei';
+import { Html } from '@react-three/drei';
 
 import { usePixelTexture } from '../@core/usePixelTexture';
 import { MapPosition } from '../game.machine';
@@ -6,45 +6,37 @@ import { MapPosition } from '../game.machine';
 type Props = {
   position: MapPosition;
   isVisible: boolean;
-  text: string;
 }
 
 export const SpeechBubble = ({
   position,
   isVisible,
-  text,
 }: Props) => {
   const bubbleImage = '../speech-bubble.png';
 
   const texture = usePixelTexture(bubbleImage);
-  const yOffset = 1;
+  const yOffset = 0.8;
+  if (!isVisible) {
+    return null;
+  }
   return (
-    <mesh
-      position={[position[0], position[1] + yOffset, 2]}
-    >
-
-      <boxGeometry
-
-        attach="geometry"
-        args={[5, 3, 1]}
-      />
-      <meshStandardMaterial
-        attach="material"
-        map={texture}
-
-        transparent
-      />
-
-      <Text
-        visible={isVisible}
-        position={[position[0] - 3, position[1] + yOffset + 1, 3]}
-        color="#111111"
-        fontSize={0.3}
-        font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
+    <>
+      <sprite
+        position={[position[0] + 0.4, position[1] + yOffset, 3]}
       >
-
-        {text}
-      </Text>
-    </mesh>
+        <spriteMaterial
+          transparent
+          map={texture}
+        />
+      </sprite>
+      <sprite>
+        <Html
+          // occlude="blending"
+          transform
+          sprite
+          style={{ background: 'transparent' }}
+        ><h1>hello</h1></Html>
+      </sprite>
+    </>
   );
 };

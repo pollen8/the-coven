@@ -11,10 +11,9 @@ import { cauldronMachine } from './cauldron/cauldron.machine';
 import { characterMachine } from './character/character.machine';
 import {
   cupboardMachine,
-  IItem,
+  Item,
 } from './cupboard/cupboard.machine';
 import { items } from './items';
-import { level } from './levels/level1';
 import { npcMachine } from './npc/npc.machine';
 import { questMachine } from './npc/quest.machine';
 import { spellBookMachine } from './spellbook/spellbook.machine';
@@ -59,7 +58,6 @@ export const gameMachine = createMachine({
   schema: {
     context: {} as {
       windows: WindowState;
-      position: MapPosition;
       level: Level;
       characters: ActorRefFrom<typeof characterMachine>[];
       npcs: ActorRefFrom<typeof npcMachine>[];
@@ -70,10 +68,10 @@ export const gameMachine = createMachine({
     | { type: 'MOVE_RIGHT'; speed: number }
     | { type: 'MOVE_LEFT'; speed: number }
     | { type: 'MOVE_CHARACTER_TO'; position: [number, number] }
-    | { type: 'CHECK_PICKUP_ITEM' }
+    | { type: 'CHECK_PICKUP_ITEM'; position: MapPosition }
     | { type: 'CHECK_NPC' }
-    | { type: 'REMOVE_ITEM_FROM_MAP' }
-    | { type: 'ADD_ITEM_TO_MAP'; item: IItem }
+    | { type: 'REMOVE_ITEM_FROM_MAP'; itemId: string; position: MapPosition }
+    | { type: 'ADD_ITEM_TO_MAP'; item: Item; position: MapPosition }
     | { type: 'OPEN_WINDOW'; window: keyof WindowState }
     | { type: 'CLOSE_WINDOW'; window: keyof WindowState }
     | { type: 'STEP' }
@@ -123,7 +121,6 @@ export const gameMachine = createMachine({
       spellBook: { open: false, actor: null },
       cauldron: { open: false, actor: null },
     },
-    position: [0, 0],
     npcs: [],
     quests: [],
     characters: [],
@@ -170,11 +167,11 @@ export const gameMachine = createMachine({
 }, {
   guards: {
 
-    tileHasItem: (context) => {
-      const { x, y } = itemLocation(context.level, context.position);
+    tileHasItem: (context, { position }) => {
+      const { x, y } = itemLocation(context.level, position);
       return context.level.objects[y][x] !== 0;
     },
-    tileNextToNpc: ({ position, npcs }) => {
+    tileNextToNpc: ({ npcs }, { position }) => {
       const npc = npcs.find((npc) => {
         const npcPosition = npc.getSnapshot()?.context.position;
         if (!npcPosition) {
@@ -183,7 +180,6 @@ export const gameMachine = createMachine({
         return [position[0] - 1, position[0], position[0] + 1].includes(npcPosition[0]) &&
         [position[1] - 1, position[1], position[1] + 1].includes(npcPosition[1]);
       });
-      console.log('npc', npc);
       return npc ? true : false;
     }
   },
@@ -195,7 +191,7 @@ export const gameMachine = createMachine({
       }
       character.send({ type: 'MOVE_CHARACTER_TO', position: event.position });
     },
-    talkToNpc: (({ position, npcs }) => {
+    talkToNpc: (({ npcs }, { position }) => {
       const npc = npcs.find((npc) => {
         const npcPosition = npc.getSnapshot()?.context.position;
         if (!npcPosition) {
@@ -212,18 +208,20 @@ export const gameMachine = createMachine({
     openCupboard: assign((context) => context.windows.cupboard.open = true),
     openWindow: assign((context, event) => context.windows[event.window].open = true),
     closeWindow: assign((context, event) => context.windows[event.window].open = false),
-    pickUpItem: sendTo('cupboardMachine', (context: any) => {
-      const { x, y } = itemLocation(context.level, context.position);
+    pickUpItem: sendTo('cupboardMachine', (context: any, event) => {
+      console.log('pcikcup', event);
+      const { x, y } = itemLocation(context.level, event.position);
       const pickedUp = items[Math.floor(context.level.objects[y][x])];
-      return { type: 'SET_ITEM', item: pickedUp };
+      return { type: 'SET_ITEM', item: pickedUp, position: event.position };
     }),
 
-    removeItemFromMap: (context => {
-      const { x, y } = itemLocation(context.level, context.position);
+    removeItemFromMap: assign((context, event) => {
+      console.log('remove item', context, event);
+      const { x, y } = itemLocation(context.level, event.position);
       context.level.objects[y][x] = 0;
     }),
-    addItemToMap: ((context, event) => {
-      const { x, y } = itemLocation(context.level, context.position);
+    addItemToMap: assign((context, event) => {
+      const { x, y } = itemLocation(context.level, event.position);
       context.level.objects[y][x] = Number(event.item.id);
     }),
 

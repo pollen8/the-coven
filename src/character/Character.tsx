@@ -43,7 +43,6 @@ export const Character = ({
   const [state, send] = useActor(actor);
   // return null;
 
-  console.log(state, state.value);
   const statePosition = state.context.position; // GameContext.useSelector(({ context }) => context.position);
   const isMoving = state.matches('moving') || state.matches('stepping');
   const [position, setPosition] = useState<[number, number]>([0, 0]);
@@ -52,7 +51,6 @@ export const Character = ({
   const watchKeyDown = useMemo(() => (e: KeyboardEvent) => {
     switch (e.key) {
       case 'ArrowLeft':
-        console.log('send left');
         send({ type: 'MOVE_LEFT', speed });
         e.preventDefault(); // Avoid scrolling the browser window
         break;
@@ -69,14 +67,14 @@ export const Character = ({
         e.preventDefault();
         break;
       case ' ':
-        sendGame({ type: 'CHECK_PICKUP_ITEM' });
+        sendGame({ type: 'CHECK_PICKUP_ITEM', position: statePosition });
         e.preventDefault();
 
         break;
       default:
         break;
     }
-  }, [send, speed, sendGame]);
+  }, [send, speed, sendGame, statePosition]); // @TODO is it position or statePosition
 
   useEffect(() => {
     document.addEventListener('keydown', watchKeyDown);

@@ -1,6 +1,6 @@
-import { IItem } from './cupboard/cupboard.machine';
+import { Item } from './cupboard/cupboard.machine';
 
-export const items: IItem[] = [
+export const items: Item[] = [
   {
     id: '0',
     title: 'none',

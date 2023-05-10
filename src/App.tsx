@@ -51,7 +51,7 @@ function App() {
 function AppInside() {
   const { send } = GameContext.useActorRef();
   const l = GameContext.useSelector(({ context }) => context.level);
-  const center = GameContext.useSelector(({ context }) => context.position);
+  const center = GameContext.useSelector(({ context }) => context.characters?.[0].getSnapshot()?.context.position ?? [0, 0] as [number, number]);
   return <>
     <Game cameraZoom={50}>
       <ambientLight />

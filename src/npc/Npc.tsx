@@ -34,7 +34,6 @@ export const Npc = ({
   const statePosition = state.context.position;
   const [position, setPosition] = useState<MapPosition>([0, 0]);
 
-  console.log('npc sprite', state.context.spriteImage, isChatting);
   const texture = usePixelTexture(state.context.spriteImage);
   const animator = useMemo(
     () => new PlainAnimator(texture, spriteColumns, spriteRows, isMoving ? spriteColumns * spriteRows : 1, framesPerSecond)
@@ -42,7 +41,6 @@ export const Npc = ({
   );
 
   const translate = useCallback(([x, y]: MapPosition): MapPosition => [x, y * -1], []);
-  console.log('statePosition', statePosition);
   // Animate the character run
   useFrame(() => {
     animator.animate();
@@ -53,18 +51,14 @@ export const Npc = ({
       setPosition(newP);
     }
   });
-  //
-  console.log(position);
   return (
     <GameObject>
-      {/*
+
       <SpeechBubble
         isVisible={isChatting}
         position={position}
-        text="hello"
-      /> */}
+      />
       <sprite
-
         position={[...position, 2]}
       >
         <spriteMaterial
