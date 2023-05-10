@@ -18,6 +18,7 @@ export const characterMachine = createMachine({
   schema: {
     context: {} as {
       position: MapPosition;
+      direction: 'right' | 'left';
       path: GraphStep[];
       level?: Level;
     },
@@ -29,6 +30,7 @@ export const characterMachine = createMachine({
     | { type: 'SET_LEVEL'; level: Level }
   },
   context: {
+    direction: 'right',
     position: [0, 0],
     path: [],
     level: undefined,
@@ -120,8 +122,14 @@ export const characterMachine = createMachine({
 
       context.path = context.path.slice(1);
     }),
-    moveLeft: assign((context) => context.position[0] = context.position[0] - 1),
-    moveRight: assign(context => context.position[0] = context.position[0] + 1),
+    moveLeft: assign((context) => {
+      context.position[0] = context.position[0] - 1;
+      context.direction = 'left';
+    }),
+    moveRight: assign((context) => {
+      context.position[0] = context.position[0] + 1;
+      context.direction = 'right';
+    }),
     moveUp: assign(context => context.position[1] = context.position[1] - 1),
     moveDown: assign(context => context.position[1] = context.position[1] + 1),
     step: assign(context => {

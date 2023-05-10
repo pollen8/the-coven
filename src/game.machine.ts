@@ -92,6 +92,7 @@ export const gameMachine = createMachine({
       spawn(characterMachine.withContext({
         path: [],
         position: [0, 0],
+        direction: 'right',
         level: JSON.parse(JSON.stringify(context.level)),
       }), 'eleanor')
     ];

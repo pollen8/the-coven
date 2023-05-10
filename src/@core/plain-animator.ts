@@ -35,6 +35,7 @@ export class PlainAnimator {
    * @param {number} tilesAmountVertically - number of rows in your sprite image
    * @param {number} tilesTotalAmount - number of frames in your sprite image
    * @param {number} framesPerSecond - number of frames per second, for example 15
+   * @param {number} row - the horizontal set of sprites to show.
    */
   constructor(
     public texture: Texture,
@@ -42,12 +43,14 @@ export class PlainAnimator {
     protected tilesAmountVertically: number,
     protected tilesTotalAmount: number,
     framesPerSecond: number,
+    protected row: number,
   ) {
     this.tilesTotalAmount -= 1; // Indexing from 0
     this.frameDisplayDuration = 1000 / framesPerSecond;
     this.texture.wrapS = RepeatWrapping;
     this.texture.wrapT = RepeatWrapping;
     this.texture.repeat.set(1 / tilesAmountHorizontally, 1 / tilesAmountVertically);
+    this.row = row;
   }
 
   /**
@@ -100,7 +103,7 @@ export class PlainAnimator {
 
     const currentColumn = this.currentFrame % this.tilesAmountHorizontally;
     // Console.log('update frame', currentColumn, this.currentFrame, ' % ', this.tilesAmountHorizontally);
-    const currentRow = Math.floor(this.currentFrame / this.tilesAmountHorizontally);
+    const currentRow = Math.floor(this.currentFrame / this.tilesAmountHorizontally) + this.row;
 
     this.texture.offset.x = currentColumn / this.tilesAmountHorizontally;
     this.texture.offset.y = 1 - currentRow / this.tilesAmountVertically - tileHeight;

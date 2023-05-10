@@ -34,7 +34,7 @@ export const Character = ({
   spriteImage = '../chars/witch/witch1.png',
   spriteRows = 2,
   spriteColumns = 7,
-  framesPerSecond = 10,
+  framesPerSecond = 15,
   speed = 1,
   actor,
 }: Props) => {
@@ -44,6 +44,7 @@ export const Character = ({
   // return null;
 
   const statePosition = state.context.position; // GameContext.useSelector(({ context }) => context.position);
+  const direction = state.context.direction;
   const isMoving = state.matches('moving') || state.matches('stepping');
   const [position, setPosition] = useState<[number, number]>([0, 0]);
 
@@ -85,7 +86,7 @@ export const Character = ({
 
   const texture = usePixelTexture(spriteImage);
   const animator = useMemo(
-    () => new PlainAnimator(texture, spriteColumns, spriteRows, isMoving ? spriteColumns * spriteRows : 1, framesPerSecond)
+    () => new PlainAnimator(texture, spriteColumns, spriteRows, isMoving ? spriteColumns : 1, framesPerSecond, direction === 'right' ? 0 : 1)
     , [framesPerSecond, spriteColumns, spriteRows, texture, isMoving]
   );
 

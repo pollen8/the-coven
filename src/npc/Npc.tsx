@@ -36,7 +36,7 @@ export const Npc = ({
 
   const texture = usePixelTexture(state.context.spriteImage);
   const animator = useMemo(
-    () => new PlainAnimator(texture, spriteColumns, spriteRows, isMoving ? spriteColumns * spriteRows : 1, framesPerSecond)
+    () => new PlainAnimator(texture, spriteColumns, spriteRows, isMoving ? spriteColumns * spriteRows : 1, framesPerSecond, 0)
     , [framesPerSecond, spriteColumns, spriteRows, texture, isMoving]
   );
 
