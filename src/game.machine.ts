@@ -229,7 +229,7 @@ export const gameMachine = createMachine({
   },
 });
 
-const itemLocation = (level: Level, position: [number, number]) => {
+export const itemLocation = (level: Level, position: [number, number]) => {
   const h = level.map.length;
   const w = level.map[0].length;
   const y = (position[1] + Math.ceil(h / 2));

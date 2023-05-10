@@ -1,4 +1,3 @@
-Walls aren't blocking when using arrow keys
 constrain character to map boundaries
 when char gets towards edge of screen move the camera so they look like they are still and bg moving instead
 Drop multiple items in one square
@@ -29,9 +28,13 @@ editor
 NPC
   - chat interface
 
+Character
+
 
 ### Done
 
 * make images crisper 
 * Characters flipped when moving left/right
+* Walls aren't blocking when using arrow keys
+ 
  

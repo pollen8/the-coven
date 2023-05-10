@@ -8,6 +8,7 @@ import {
 } from '../@core/astar';
 import {
   GraphStep,
+  itemLocation,
   Level,
   MapPosition,
 } from '../game.machine';
@@ -41,18 +42,22 @@ export const characterMachine = createMachine({
       actions: 'setLevel',
     },
     MOVE_LEFT: {
+      cond: 'canMoveLeft',
       actions: 'moveLeft',
       target: 'stepping',
     },
     MOVE_RIGHT: {
+      cond: 'canMoveRight',
       actions: 'moveRight',
       target: 'stepping',
     },
     MOVE_UP: {
+      cond: 'canMoveUp',
       target: 'stepping',
       actions: 'moveUp',
     },
     MOVE_DOWN: {
+      cond: 'canMoveDown',
       actions: 'moveDown',
       target: 'stepping',
     },
@@ -94,7 +99,10 @@ export const characterMachine = createMachine({
   guards: {
     hasPath: (context) => context.path.length > 0,
     hasNoPath: (context) => context.path.length === 0,
-
+    canMoveLeft: (context) => isWall([context.position[0] - 1, context.position[1]], context.level),
+    canMoveRight: (context) => isWall([context.position[0] + 1, context.position[1]], context.level),
+    canMoveUp: (context) => isWall([context.position[0], context.position[1] - 1], context.level),
+    canMoveDown: (context) => isWall([context.position[0], context.position[1] + 1], context.level),
   },
   actions: {
     setLevel: assign((context, event) => context.level = event.level),
@@ -169,4 +177,13 @@ const charPositionToMapRef = (level: Level, position: [number, number]) => {
   const x = position[0] + Math.ceil(w / 2);
   const y = position[1] - Math.ceil(h / 2) + h;
   return { x, y };
+};
+
+const isWall = (position: MapPosition, level?: Level) => {
+  if (!level) {
+    return false;
+  }
+  const { x, y } = itemLocation(level, position);
+  const wall = level.walls?.[y]?.[x];
+  return wall === 1;
 };

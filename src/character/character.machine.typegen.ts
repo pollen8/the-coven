@@ -32,7 +32,11 @@
           
         };
         eventsCausingGuards: {
-          "hasNoPath": "";
+          "canMoveDown": "MOVE_DOWN";
+"canMoveLeft": "MOVE_LEFT";
+"canMoveRight": "MOVE_RIGHT";
+"canMoveUp": "MOVE_UP";
+"hasNoPath": "";
 "hasPath": "xstate.after(100)#character.moving";
         };
         eventsCausingServices: {
