@@ -7,19 +7,21 @@ import {
 
 import { assign } from '@xstate/immer';
 
-import {
-  astar,
-  Graph,
-} from './@core/astar';
 import { cauldronMachine } from './cauldron/cauldron.machine';
+import { characterMachine } from './character/character.machine';
 import {
   cupboardMachine,
   IItem,
 } from './cupboard/cupboard.machine';
 import { items } from './items';
+import { level } from './levels/level1';
+import { npcMachine } from './npc/npc.machine';
+import { questMachine } from './npc/quest.machine';
 import { spellBookMachine } from './spellbook/spellbook.machine';
 
-export type ILevel = {
+export type LevelId = string;
+export type Level = {
+  id: LevelId;
   map: number[][];
   /** 0 = can't go through - otherwise the value indicates the cost to move through this area */
   walls: number[][];
@@ -27,7 +29,7 @@ export type ILevel = {
   objects: number[][];
 };
 
-type IGraphStep = {
+export type GraphStep = {
   parent: { x: number; y: number };
   x: number;
   y: number;
@@ -49,15 +51,19 @@ type WindowState = {
   };
 };
 
+export type MapPosition = [number, number];
+
 export const gameMachine = createMachine({
   id: 'gameMachine',
   tsTypes: {} as import('./game.machine.typegen').Typegen0,
   schema: {
     context: {} as {
       windows: WindowState;
-      position: [number, number];
-      level: ILevel;
-      path: IGraphStep[];
+      position: MapPosition;
+      level: Level;
+      characters: ActorRefFrom<typeof characterMachine>[];
+      npcs: ActorRefFrom<typeof npcMachine>[];
+      quests: ActorRefFrom<typeof questMachine>[];
     },
     events: {} as { type: 'MOVE_DOWN'; speed: number }
     | { type: 'MOVE_UP'; speed: number }
@@ -65,6 +71,7 @@ export const gameMachine = createMachine({
     | { type: 'MOVE_LEFT'; speed: number }
     | { type: 'MOVE_CHARACTER_TO'; position: [number, number] }
     | { type: 'CHECK_PICKUP_ITEM' }
+    | { type: 'CHECK_NPC' }
     | { type: 'REMOVE_ITEM_FROM_MAP' }
     | { type: 'ADD_ITEM_TO_MAP'; item: IItem }
     | { type: 'OPEN_WINDOW'; window: keyof WindowState }
@@ -83,6 +90,32 @@ export const gameMachine = createMachine({
     if (!context.windows.cauldron.actor) {
       context.windows.cauldron.actor = spawn(cauldronMachine, 'cauldronMachine');
     }
+    context.characters = [
+      spawn(characterMachine.withContext({
+        path: [],
+        position: [0, 0],
+        level: JSON.parse(JSON.stringify(context.level)),
+      }), 'eleanor')
+    ];
+    context.npcs = [
+      spawn(npcMachine.withContext({
+        id: 'bob',
+        levelId: '1',
+        spriteImage: '../chars/sensei/sensei.png',
+        position: [0, 1],
+        conversations: [],
+        path: [],
+        quests: [],
+      }), { name: 'bob' }),
+    ];
+
+    context.quests = [
+      spawn(questMachine.withContext({
+        npcOwner: 'bob',
+        availableAt: 0,
+        title: 'Bobs chicken hunt',
+      }))
+    ];
   }),
   context: {
     windows: {
@@ -91,8 +124,11 @@ export const gameMachine = createMachine({
       cauldron: { open: false, actor: null },
     },
     position: [0, 0],
-    path: [],
+    npcs: [],
+    quests: [],
+    characters: [],
     level: {
+      id: '1',
       map: [],
       walls: [],
       scenery: [],
@@ -102,33 +138,18 @@ export const gameMachine = createMachine({
   states: {
     initial: {
       on: {
+        MOVE_CHARACTER_TO: {
+          actions: 'moveTo',
+        },
         CHECK_PICKUP_ITEM: [{
-          target: '.',
           cond: 'tileHasItem',
-          actions: 'pickUpItem',
+          actions: ['pickUpItem', 'openCupboard'],
+        }, {
+          cond: 'tileNextToNpc',
+          actions: 'talkToNpc'
         }, {
           target: '.',
         }],
-        MOVE_LEFT: {
-          actions: 'moveLeft',
-          target: 'stepping',
-        },
-        MOVE_RIGHT: {
-          actions: 'moveRight',
-          target: 'stepping',
-        },
-        MOVE_UP: {
-          target: 'stepping',
-          actions: 'moveUp',
-        },
-        MOVE_DOWN: {
-          actions: 'moveDown',
-          target: 'stepping',
-        },
-        MOVE_CHARACTER_TO: {
-          actions: 'makePath',
-          target: 'moving',
-        },
         OPEN_WINDOW: {
           actions: 'openWindow',
         },
@@ -145,42 +166,50 @@ export const gameMachine = createMachine({
         },
       },
     },
-    stepping: {
-      after: {
-        100: {
-          target: 'initial',
-        }
-      }
-    },
-    moving: {
-      on: {
-        MOVE_CHARACTER_TO: {
-          actions: 'makePath',
-          target: 'moving',
-        },
-      },
-      always: { target: 'initial', cond: 'hasNoPath' },
-      after: {
-        100: {
-          actions: ['step', 'popPath'],
-          target: 'moving',
-          cond: 'hasPath',
-        },
-      },
-    },
   },
 }, {
   guards: {
-    hasPath: context => context.path.length > 0,
-    hasNoPath(context) {
-      return context.path.length === 0;
-    },
-    tileHasItem(context) {
+
+    tileHasItem: (context) => {
       const { x, y } = itemLocation(context.level, context.position);
       return context.level.objects[y][x] !== 0;
     },
+    tileNextToNpc: ({ position, npcs }) => {
+      const npc = npcs.find((npc) => {
+        const npcPosition = npc.getSnapshot()?.context.position;
+        if (!npcPosition) {
+          return false;
+        }
+        return [position[0] - 1, position[0], position[0] + 1].includes(npcPosition[0]) &&
+        [position[1] - 1, position[1], position[1] + 1].includes(npcPosition[1]);
+      });
+      console.log('npc', npc);
+      return npc ? true : false;
+    }
   },
   actions: {
+    moveTo: (context, event) => {
+      const character = context.characters[0];
+      if (!character) {
+        return;
+      }
+      character.send({ type: 'MOVE_CHARACTER_TO', position: event.position });
+    },
+    talkToNpc: (({ position, npcs }) => {
+      const npc = npcs.find((npc) => {
+        const npcPosition = npc.getSnapshot()?.context.position;
+        if (!npcPosition) {
+          return false;
+        }
+        return [position[0] - 1, position[0], position[0] + 1].includes(npcPosition[0]) &&
+        [position[1] - 1, position[1], position[1] + 1].includes(npcPosition[1]);
+      });
+      if (!npc) {
+        return;
+      }
+      npc.send('TALK');
+    }),
+    openCupboard: assign((context) => context.windows.cupboard.open = true),
     openWindow: assign((context, event) => context.windows[event.window].open = true),
     closeWindow: assign((context, event) => context.windows[event.window].open = false),
     pickUpItem: sendTo('cupboardMachine', (context: any) => {
@@ -188,69 +217,20 @@ export const gameMachine = createMachine({
       const pickedUp = items[Math.floor(context.level.objects[y][x])];
       return { type: 'SET_ITEM', item: pickedUp };
     }),
-    makePath: assign((context, event: any) => {
-      debugger;
-      const graph = new Graph(context.level.walls, { diagonal: true });
-      const { x, y } = charPositionToMapRef(context.level, context.position);
-      const start = graph.grid[y][x];
-      const end = graph.grid[event.position[1]][event.position[0]];
 
-      if (!end) {
-        return;
-      }
-
-      const result = astar.search(graph, start, end, { closest: true });
-
-      context.path = result;
-    }),
-    removeItemFromMap: assign(context => {
+    removeItemFromMap: (context => {
       const { x, y } = itemLocation(context.level, context.position);
       context.level.objects[y][x] = 0;
     }),
-    addItemToMap: assign((context, event) => {
+    addItemToMap: ((context, event) => {
       const { x, y } = itemLocation(context.level, context.position);
       context.level.objects[y][x] = Number(event.item.id);
-    }),
-    popPath: assign(context => {
-      if (context.path.length === 0) {
-        return;
-      }
-
-      context.path = context.path.slice(1);
-    }),
-    moveLeft: assign(context => context.position[0] = context.position[0] - 1),
-    moveRight: assign(context => context.position[0] = context.position[0] + 1),
-    moveUp: assign(context => context.position[1] = context.position[1] - 1),
-    moveDown: assign(context => context.position[1] = context.position[1] + 1),
-    step: assign(context => {
-      if (context.path.length === 0) {
-        return;
-      }
-
-      const next = context.path[0];
-      const xDelta = next.x - next.parent.x;
-      const yDelta = next.y - next.parent.y;
-      if (yDelta === 1) {
-        context.position[0] = context.position[0] + 1;
-      }
-
-      if (yDelta === -1) {
-        context.position[0] = context.position[0] - 1;
-      }
-
-      if (xDelta === 1) {
-        context.position[1] = context.position[1] + 1;
-      }
-
-      if (xDelta === -1) {
-        context.position[1] = context.position[1] - 1;
-      }
     }),
 
   },
 });
 
-const itemLocation = (level: ILevel, position: [number, number]) => {
+const itemLocation = (level: Level, position: [number, number]) => {
   const h = level.map.length;
   const w = level.map[0].length;
   const y = (position[1] + Math.ceil(h / 2));
@@ -258,14 +238,3 @@ const itemLocation = (level: ILevel, position: [number, number]) => {
   return { x, y };
 };
 
-/**
- * The camera is centered on 0,0 so tiles above this have a negative number
- * Take the player coordinates in the tiles and translate to the x,y array values for the map
- */
-const charPositionToMapRef = (level: ILevel, position: [number, number]) => {
-  const h = level.map.length;
-  const w = level.map[0].length;
-  const x = position[0] + Math.ceil(w / 2);
-  const y = position[1] - Math.ceil(h / 2) + h;
-  return { x, y };
-};

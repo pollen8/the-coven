@@ -23,7 +23,7 @@ const Dolly = ({
   const props = useSpring({
     from: { x: lastCenter[0], y: lastCenter[1] },
     to: { x: center[0], y: center[1] },
-    onChange: (props: any) => console.log('frame', props),
+    // onChange: (props: any) => console.log('frame', props),
     onRest: () => setLastCenter(center)
   });
 

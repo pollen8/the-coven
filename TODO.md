@@ -20,6 +20,12 @@ NPC
  - Move around randomly / designated area
 
 Move HTML into drei html
-make images crisper
 
 
+editor
+- copy editor from main branch?
+
+
+### Done
+
+* make images crisper 

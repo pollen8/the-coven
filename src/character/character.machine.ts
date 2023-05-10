@@ -1,5 +1,7 @@
 import { createMachine } from 'xstate';
 
+import { assign } from '@xstate/immer';
+
 import {
   astar,
   Graph,
@@ -24,6 +26,7 @@ export const characterMachine = createMachine({
     | { type: 'MOVE_RIGHT'; speed: number }
     | { type: 'MOVE_LEFT'; speed: number }
     | { type: 'MOVE_CHARACTER_TO'; position: [number, number] }
+    | { type: 'SET_LEVEL'; level: Level }
   },
   context: {
     position: [0, 0],
@@ -32,6 +35,9 @@ export const characterMachine = createMachine({
   },
   initial: 'idle',
   on: {
+    SET_LEVEL: {
+      actions: 'setLevel',
+    },
     MOVE_LEFT: {
       actions: 'moveLeft',
       target: 'stepping',
@@ -89,7 +95,8 @@ export const characterMachine = createMachine({
 
   },
   actions: {
-    makePath: ((context, event: any) => {
+    setLevel: assign((context, event) => context.level = event.level),
+    makePath: assign((context, event: any) => {
       if (!context.level) {
         return;
       }
@@ -106,21 +113,18 @@ export const characterMachine = createMachine({
 
       context.path = result;
     }),
-    popPath: (context => {
+    popPath: assign(context => {
       if (context.path.length === 0) {
         return;
       }
 
       context.path = context.path.slice(1);
     }),
-    moveLeft: (context) => {
-      console.log('move lefet', context);
-      context.position[0] = context.position[0] - 1;
-    },
-    moveRight: (context => context.position[0] = context.position[0] + 1),
-    moveUp: (context => context.position[1] = context.position[1] - 1),
-    moveDown: (context => context.position[1] = context.position[1] + 1),
-    step: (context => {
+    moveLeft: assign((context) => context.position[0] = context.position[0] - 1),
+    moveRight: assign(context => context.position[0] = context.position[0] + 1),
+    moveUp: assign(context => context.position[1] = context.position[1] - 1),
+    moveDown: assign(context => context.position[1] = context.position[1] + 1),
+    step: assign(context => {
       if (context.path.length === 0) {
         return;
       }

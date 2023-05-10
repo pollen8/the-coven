@@ -1,5 +1,8 @@
-export const level = {
-  map: [
+import { Level } from '../game.machine';
+
+export const level: Level = {
+  id: '1',
+  map: [ // TODO overlay a series of map elements to make them more transferable - e.g. house, ground, forest lake etc
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],

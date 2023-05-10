@@ -4,10 +4,7 @@
   export interface Typegen0 {
         '@@xstate/typegen': true;
         internalEvents: {
-          "": { type: "" };
-"xstate.after(100)#gameMachine.moving": { type: "xstate.after(100)#gameMachine.moving" };
-"xstate.after(100)#gameMachine.stepping": { type: "xstate.after(100)#gameMachine.stepping" };
-"xstate.init": { type: "xstate.init" };
+          "xstate.init": { type: "xstate.init" };
         };
         invokeSrcNameMap: {
           
@@ -21,29 +18,24 @@
         eventsCausingActions: {
           "addItemToMap": "ADD_ITEM_TO_MAP";
 "closeWindow": "CLOSE_WINDOW";
-"makePath": "MOVE_CHARACTER_TO";
-"moveDown": "MOVE_DOWN";
-"moveLeft": "MOVE_LEFT";
-"moveRight": "MOVE_RIGHT";
-"moveUp": "MOVE_UP";
+"moveTo": "MOVE_CHARACTER_TO";
+"openCupboard": "CHECK_PICKUP_ITEM";
 "openWindow": "OPEN_WINDOW";
 "pickUpItem": "CHECK_PICKUP_ITEM";
-"popPath": "xstate.after(100)#gameMachine.moving";
 "removeItemFromMap": "REMOVE_ITEM_FROM_MAP";
-"step": "xstate.after(100)#gameMachine.moving";
+"talkToNpc": "CHECK_PICKUP_ITEM";
         };
         eventsCausingDelays: {
           
         };
         eventsCausingGuards: {
-          "hasNoPath": "";
-"hasPath": "xstate.after(100)#gameMachine.moving";
-"tileHasItem": "CHECK_PICKUP_ITEM";
+          "tileHasItem": "CHECK_PICKUP_ITEM";
+"tileNextToNpc": "CHECK_PICKUP_ITEM";
         };
         eventsCausingServices: {
           
         };
-        matchesStates: "initial" | "moving" | "stepping";
+        matchesStates: "initial";
         tags: never;
       }
   

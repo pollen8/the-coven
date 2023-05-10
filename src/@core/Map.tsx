@@ -1,9 +1,8 @@
 import { PlaneGeometry } from 'three';
 
-import { useTexture } from '@react-three/drei';
-
-import { ILevel } from '../game.machine';
+import { Level } from '../game.machine';
 import { GameObject } from './GameObject';
+import { usePixelTexture } from './usePixelTexture';
 
 const geometry = new PlaneGeometry(1, 1);
 const generics = new Array(71).fill('').map((_, i) => `./tiles/generic-rpg-tile${i < 9 ? '0' + (i + 1) : i + 1}.png`);
@@ -50,18 +49,18 @@ const Tile = ({
 
 const loot = ['./props/generic-rpg-loot03.png', './props/generic-rpg-loot05.png'];
 
-interface IProps {
-  level: ILevel;
+interface Props {
+  level: Level;
   onClick?: (position: [number, number]) => void;
 }
 
 export const Map = ({
   level,
   onClick,
-}: IProps) => {
-  const textures = useTexture(tiles);
-  const objects = useTexture(loot);
-  const scenery = useTexture(backgrounds);
+}: Props) => {
+  const textures = usePixelTexture(tiles);
+  const objects = usePixelTexture(loot);
+  const scenery = usePixelTexture(backgrounds);
   return (
     <>
       {

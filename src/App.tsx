@@ -11,10 +11,11 @@ import Dolly from './@core/Dolly';
 import { Game } from './@core/Game';
 import { Map } from './@core/Map';
 import { Cauldron } from './cauldron/Cauldron';
-import { Character } from './Character';
+import { Characters } from './character/Characters';
 import { Cupboard } from './cupboard/Cupboard';
 import { gameMachine } from './game.machine';
 import { level } from './levels/level1';
+import { Npcs } from './npc/Npcs';
 import { SpellBook } from './spellbook/SpellBook';
 import { Window } from './ui/Window';
 
@@ -51,7 +52,6 @@ function AppInside() {
   const { send } = GameContext.useActorRef();
   const l = GameContext.useSelector(({ context }) => context.level);
   const center = GameContext.useSelector(({ context }) => context.position);
-
   return <>
     <Game cameraZoom={50}>
       <ambientLight />
@@ -64,9 +64,8 @@ function AppInside() {
             send({ type: 'MOVE_CHARACTER_TO', position: p });
           }}
         />
-        <Character
-          spriteImage="./chars/mani/mani-idle-run.png"
-        />
+        <Characters />
+        <Npcs />
       </Suspense>
     </Game>
     <div style={{ position: 'absolute', bottom: 0 }}>

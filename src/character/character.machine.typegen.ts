@@ -25,6 +25,7 @@
 "moveRight": "MOVE_RIGHT";
 "moveUp": "MOVE_UP";
 "popPath": "xstate.after(100)#character.moving";
+"setLevel": "SET_LEVEL";
 "step": "xstate.after(100)#character.moving";
         };
         eventsCausingDelays: {

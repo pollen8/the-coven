@@ -4,13 +4,16 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { ActorRefFrom } from 'xstate';
 
-import { useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
+import { useActor } from '@xstate/react';
 
-import { GameObject } from './@core/GameObject';
-import { PlainAnimator } from './@core/plain-animator';
-import { GameContext } from './App';
+import { GameObject } from '../@core/GameObject';
+import { PlainAnimator } from '../@core/plain-animator';
+import { usePixelTexture } from '../@core/usePixelTexture';
+import { GameContext } from '../App';
+import { characterMachine } from './character.machine';
 
 type Props = {
   /** Path name to the texture containing the character's sprite canvas */
@@ -23,25 +26,33 @@ type Props = {
   framesPerSecond?: number;
   /** Character's speed */
   speed?: number;
+  actor: ActorRefFrom<typeof characterMachine>;
   // TranslatePosition: ([x, y]: [number, number]) => [number, number];
 };
 
 export const Character = ({
-  spriteImage = './chars/witch/witch1.png',
-  spriteRows = 1,
+  spriteImage = '../chars/witch/witch1.png',
+  spriteRows = 2,
   spriteColumns = 7,
   framesPerSecond = 10,
   speed = 1,
+  actor,
 }: Props) => {
-  const { send } = GameContext.useActorRef();
-  const statePosition = GameContext.useSelector(({ context }) => context.position);
-  const isMoving = GameContext.useSelector(state => state.matches('moving') || state.matches('stepping'));
+  const { send: sendGame } = GameContext.useActorRef();
+
+  const [state, send] = useActor(actor);
+  // return null;
+
+  console.log(state, state.value);
+  const statePosition = state.context.position; // GameContext.useSelector(({ context }) => context.position);
+  const isMoving = state.matches('moving') || state.matches('stepping');
   const [position, setPosition] = useState<[number, number]>([0, 0]);
 
   // TODO - we can simplify this down to just call MOVE_CHARACTER_TO instead.
   const watchKeyDown = useMemo(() => (e: KeyboardEvent) => {
     switch (e.key) {
       case 'ArrowLeft':
+        console.log('send left');
         send({ type: 'MOVE_LEFT', speed });
         e.preventDefault(); // Avoid scrolling the browser window
         break;
@@ -58,15 +69,14 @@ export const Character = ({
         e.preventDefault();
         break;
       case ' ':
-        send({ type: 'CHECK_PICKUP_ITEM' });
-        send({ type: 'OPEN_WINDOW', window: 'cupboard' });
+        sendGame({ type: 'CHECK_PICKUP_ITEM' });
         e.preventDefault();
 
         break;
       default:
         break;
     }
-  }, [send, speed]);
+  }, [send, speed, sendGame]);
 
   useEffect(() => {
     document.addEventListener('keydown', watchKeyDown);
@@ -75,7 +85,7 @@ export const Character = ({
     };
   }, [watchKeyDown]);
 
-  const texture = useTexture(spriteImage);
+  const texture = usePixelTexture(spriteImage);
   const animator = useMemo(
     () => new PlainAnimator(texture, spriteColumns, spriteRows, isMoving ? spriteColumns * spriteRows : 1, framesPerSecond)
     , [framesPerSecond, spriteColumns, spriteRows, texture, isMoving]
@@ -95,10 +105,15 @@ export const Character = ({
   });
   return (
     <GameObject>
-      <mesh
+      <sprite
+
         position={[...position, 2]}
       >
-        <boxGeometry
+        <spriteMaterial
+          transparent
+          map={texture}
+        />
+        {/* <boxGeometry
           attach="geometry"
           args={[1, 1, 0.1]}
         />
@@ -106,8 +121,8 @@ export const Character = ({
           attach="material"
           map={texture}
           transparent
-        />
-      </mesh>
+        /> */}
+      </sprite>
     </GameObject>
   );
 };
